@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model author {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(255)
+  url  String? @db.VarChar(1024)
+  book book[]
+}
+
+model book {
+  id          Int        @id @default(autoincrement())
+  name        String?    @db.VarChar(255)
+  description String?    @db.VarChar(1024)
+  text        String?    @db.MediumText
+  view_count  Int        @default(0)
+  rating      Int?
+  bookmark    Int?
+  source      String?    @db.VarChar(1024)
+  cover       String?    @db.VarChar(255)
+  text_length Int?
+  author_id   Int?
+  series_id   Int?
+  created_at  Int?
+  updated_at  Int?
+  last_read   Int?
+  author      author?    @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-book-author_id")
+  series      series?    @relation(fields: [series_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-book-series_id")
+  book_tag    book_tag[]
+  image       image[]
+
+  @@index([author_id], map: "idx-book-author_id")
+  @@index([series_id], map: "idx-book-series_id")
+}
+
+model book_tag {
+  book_id Int
+  tag_id  Int
+  book    book @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-book_tag-book_id")
+  tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-book_tag-tag_id")
+
+  @@id([book_id, tag_id])
+  @@index([book_id], map: "idx-book_tag-book_id")
+  @@index([tag_id], map: "idx-book_tag-tag_id")
+}
+
+model image {
+  id        Int     @id @default(autoincrement())
+  file_name String? @db.VarChar(255)
+  path      String? @db.VarChar(255)
+  book_id   Int
+  book      book    @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk-image-book_id")
+
+  @@index([book_id], map: "idx-image-book_id")
+}
+
+model migration {
+  version    String @id @db.VarChar(180)
+  apply_time Int?
+}
+
+model series {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(255)
+  url  String? @db.VarChar(1024)
+  book book[]
+}
+
+model tag {
+  id          Int        @id @default(autoincrement())
+  name        String?    @db.VarChar(255)
+  description String?    @db.Text
+  book_tag    book_tag[]
+}
+
+model user {
+  id           Int     @id @default(autoincrement())
+  username     String? @db.VarChar(255)
+  password     String? @db.VarChar(255)
+  access_token String? @db.VarChar(255)
+  role         String? @db.VarChar(255)
+}
