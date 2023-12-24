@@ -1,19 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `email` on the `user` table. All the data in the column will be lost.
-
-*/
--- DropIndex
-DROP INDEX `User_email_key` ON `user`;
-
--- AlterTable
-ALTER TABLE `user` DROP COLUMN `email`,
-    ADD COLUMN `username` VARCHAR(255) NULL,
-    MODIFY `password` VARCHAR(255) NULL,
-    MODIFY `access_token` VARCHAR(255) NULL,
-    MODIFY `role` VARCHAR(255) NULL;
-
 -- CreateTable
 CREATE TABLE `author` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -90,6 +74,19 @@ CREATE TABLE `tag` (
     `name` VARCHAR(255) NULL,
     `description` TEXT NULL,
 
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `user` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `username` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
+    `salt` VARCHAR(255) NOT NULL,
+    `access_token` VARCHAR(255) NOT NULL,
+    `role` VARCHAR(255) NOT NULL,
+
+    UNIQUE INDEX `user_username_key`(`username`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

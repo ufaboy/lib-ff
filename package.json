@@ -20,6 +20,8 @@
   "license": "ISC",
   "dependencies": {
     "@fastify/autoload": "^5.0.0",
+    "@fastify/cors": "^8.4.1",
+    "@fastify/multipart": "^8.0.0",
     "@fastify/sensible": "^5.0.0",
     "@prisma/client": "^5.6.0",
     "fastify": "^4.0.0",
@@ -29,10 +31,13 @@
   "devDependencies": {
     "@types/node": "^20.4.4",
     "@types/tap": "^15.0.5",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
     "c8": "^7.13.0",
     "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
     "fastify-tsconfig": "^2.0.0",
-    "prisma": "^5.6.0",
+    "prisma": "^5.7.1",
     "tap": "^16.1.0",
     "ts-node": "^10.4.0",
     "typescript": "^5.2.2"
