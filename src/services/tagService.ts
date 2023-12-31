@@ -21,17 +21,19 @@ async function viewTag(id: number) {
   }
   throw new Error('tag not found');
 }
-async function updateTag(data: Tag) {
-  const tag = await prisma.tag.update({
-    where: { id: data.id },
-    data: {
-      name: data.name,
-    },
-  });
-  if (tag) {
-    return tag;
-  }
-  throw new Error('tag not found');
+async function updateTag(reqBody: unknown ) {
+  // const data = reqBody['Tag[name]']
+  // console.log('updateTag', data)
+  // const tag = await prisma.tag.update({
+  //   where: { id: data.id },
+  //   data: {
+  //     name: data.name,
+  //   },
+  // });
+  // if (tag) {
+  //   return tag;
+  // }
+  // throw new Error('tag not found');
 }
 async function searchTag(params: { sort: string }) {
   let { sort = 'id' } = params;

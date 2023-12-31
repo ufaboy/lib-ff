@@ -6,7 +6,13 @@ import {
   searchSeries,
   removeSeries,
 } from '../services/seriesService.js';
-import { Series, QuerySeries } from '../types/series.js';
+import {
+  Series,
+  QuerySeries,
+  RequestCreateSeries,
+  RequestUpdateSeries,
+} from '../types/series.js';
+import { RequestQueryID } from '../types/meta.js';
 
 interface BodyType {
   username: { value: string };
@@ -24,37 +30,36 @@ async function search(
     reply.code(404).send(error);
   }
 }
-async function view(req: FastifyRequest, reply: FastifyReply) {
+async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
-    const { id } = req.params as { id: number };
-    const series = await viewSeries(id);
+    const { id } = req.query;
+    const series = await viewSeries(Number(id));
     reply.send(series);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function create(req: FastifyRequest, reply: FastifyReply) {
+async function create(req: RequestCreateSeries, reply: FastifyReply) {
   try {
-    const { name, url } = req.params as Series;
-    const series = await createSeries({ name, url });
+    const series = await createSeries(req.body);
     reply.send(series);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function update(req: FastifyRequest, reply: FastifyReply) {
+async function update(req: RequestUpdateSeries, reply: FastifyReply) {
   try {
-    const data = req.params as Series;
-    const series = await updateSeries(data);
+    const { id } = req.query;
+    const series = await updateSeries(Number(id), req.body);
     reply.send(series);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function remove(req: FastifyRequest, reply: FastifyReply) {
+async function remove(req: RequestQueryID, reply: FastifyReply) {
   try {
-    const { id } = req.params as { id: number };
-    const series = await removeSeries(id);
+    const { id } = req.query;
+    const series = await removeSeries(Number(id));
     reply.send(series);
   } catch (error) {
     reply.code(404).send(error);

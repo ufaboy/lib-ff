@@ -6,55 +6,67 @@ import {
   searchBook,
   removeBook,
 } from '../services/bookService.js';
-import { Book, BookRaw, ExpandParams, QueryBooks } from '../types/book.js';
+import {
+  BookCreateRequest,
+  BookUpdateForm,
+  BookUpdateRequest,
+  QueryBooks,
+} from '../types/book.js';
+import { uploadImages } from '../services/imageService.js';
+import { RequestQueryID } from '../types/meta.js';
 
-interface BodyType {
-  username: { value: string };
-  password: { value: string };
-}
 async function search(
-  req: FastifyRequest<{ Body: BodyType }>,
+  req: FastifyRequest<{ Querystring: QueryBooks }>,
   reply: FastifyReply
 ) {
   try {
-    const params = req.query as QueryBooks;
+    const params = req.query;
     const books = await searchBook(params);
     reply.send(books);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function view(req: FastifyRequest, reply: FastifyReply) {
+
+async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
-    const { id, expand } = getQuery(req.query);
-    const params = getExpandParams(expand);
-    const book = await viewBook(id, params);
+    const { id } = req.query;
+    const book = await viewBook(Number(id));
     reply.send(book);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function create(req: FastifyRequest, reply: FastifyReply) {
+
+async function create(req: BookCreateRequest, reply: FastifyReply) {
   try {
-    const data = req.params as BookRaw;
+    const data = normalizeBookForm(req.body);
+    const files = req.body['Upload[imageFiles][]'];
     const book = await createBook(data);
+    await uploadImages(book.id, files);
     reply.send(book);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function update(req: FastifyRequest, reply: FastifyReply) {
+
+async function update(req: BookUpdateRequest, reply: FastifyReply) {
   try {
-    const { expand } = getQuery(req.query);
-    const params = getExpandParams(expand);
-    const data = req.params as Book;
-    const book = await updateBook(data, params);
-    reply.send(book);
+    const bookID = Number(req.query.id);
+    const files = req.body['Upload[imageFiles][]'];
+    const data = normalizeBookForm(req.body);
+    const book = await updateBook(bookID, data);
+    const image = await uploadImages(bookID, files);
+    reply.send({ ...book, image });
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function remove(req: FastifyRequest, reply: FastifyReply) {
+
+async function remove(
+  req: FastifyRequest<{ Querystring: { id: string } }>,
+  reply: FastifyReply
+) {
   try {
     const { id } = req.params as { id: number };
     const book = await removeBook(id);
@@ -63,24 +75,25 @@ async function remove(req: FastifyRequest, reply: FastifyReply) {
     reply.code(404).send(error);
   }
 }
-function getQuery(query: unknown) {
-  const { id, expand } = query as { id?: string; expand?: string };
-  return { id: Number(id), expand };
+
+function normalizeBookForm(reqBody: BookUpdateForm) {
+  return {
+    name: reqBody['Book[name]'].value,
+    tag_ids: Array.isArray(reqBody['Book[tag_ids][]'])
+      ? reqBody['Book[tag_ids][]'].map((item) => Number(item.value))
+      : [Number(reqBody['Book[tag_ids][]'].value)],
+    description: reqBody['Book[description]'].value,
+    text: reqBody['Book[text]'].value,
+    cover: reqBody['Book[cover]'].value,
+    source: reqBody['Book[source]'].value,
+    rating: Number(reqBody['Book[rating]'].value),
+    author_id: reqBody['Book[author_id]'].value
+      ? Number(reqBody['Book[author_id]'].value)
+      : null,
+    series_id: reqBody['Book[series_id]'].value
+      ? Number(reqBody['Book[series_id]'].value)
+      : null,
+  };
 }
-function getExpandParams(expand?: string) {
-  return expand
-    ? expand.split(',').reduce((acc, key) => {
-        if (key === 'tags') {
-          acc.book_tag = {
-            select: {
-              tag: true,
-            },
-          };
-        } else {
-          acc[key] = true;
-        }
-        return acc;
-      }, {} as ExpandParams)
-    : {};
-}
+
 export { search, view, create, update, remove };

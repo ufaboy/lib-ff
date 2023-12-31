@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE `author` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NULL,
+    `name` VARCHAR(255) NOT NULL,
     `url` VARCHAR(1024) NULL,
 
     PRIMARY KEY (`id`)
@@ -10,18 +10,16 @@ CREATE TABLE `author` (
 -- CreateTable
 CREATE TABLE `book` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NULL,
+    `name` VARCHAR(255) NOT NULL,
     `description` VARCHAR(1024) NULL,
     `text` MEDIUMTEXT NULL,
     `view_count` INTEGER NOT NULL DEFAULT 0,
     `rating` INTEGER NULL,
-    `bookmark` INTEGER NULL,
     `source` VARCHAR(1024) NULL,
     `cover` VARCHAR(255) NULL,
     `text_length` INTEGER NULL,
     `author_id` INTEGER NULL,
     `series_id` INTEGER NULL,
-    `created_at` INTEGER NULL,
     `updated_at` INTEGER NULL,
     `last_read` INTEGER NULL,
 
@@ -43,8 +41,8 @@ CREATE TABLE `book_tag` (
 -- CreateTable
 CREATE TABLE `image` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `file_name` VARCHAR(255) NULL,
-    `path` VARCHAR(255) NULL,
+    `file_name` VARCHAR(255) NOT NULL,
+    `path` VARCHAR(255) NOT NULL,
     `book_id` INTEGER NOT NULL,
 
     INDEX `idx-image-book_id`(`book_id`),
@@ -62,7 +60,7 @@ CREATE TABLE `migration` (
 -- CreateTable
 CREATE TABLE `series` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NULL,
+    `name` VARCHAR(255) NOT NULL,
     `url` VARCHAR(1024) NULL,
 
     PRIMARY KEY (`id`)
@@ -71,7 +69,7 @@ CREATE TABLE `series` (
 -- CreateTable
 CREATE TABLE `tag` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NULL,
+    `name` VARCHAR(255) NOT NULL,
     `description` TEXT NULL,
 
     PRIMARY KEY (`id`)

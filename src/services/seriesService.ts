@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { Series, QuerySeries } from '../types/series.js';
+import { Series, BaseSeries, QuerySeries } from '../types/series.js';
 
 const prisma = new PrismaClient();
 
-async function createSeries(data: Series) {
+async function createSeries(data: BaseSeries) {
   const series = await prisma.series.create({
     data: data,
   });
@@ -21,9 +21,9 @@ async function viewSeries(id: number) {
   throw new Error('series not found');
 }
 
-async function updateSeries(data: Series) {
+async function updateSeries(id: number, data: BaseSeries) {
   const series = await prisma.series.update({
-    where: { id: data.id },
+    where: { id: id },
     data: {
       name: data.name,
     },

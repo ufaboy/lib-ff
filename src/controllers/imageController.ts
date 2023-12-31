@@ -1,12 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import {
-  createTag,
-  viewTag,
-  updateTag,
-  searchTag,
-  removeTag,
-} from '../services/tagService.js';
-import { Tag } from '../types/tag.js';
+  uploadImages,
+  viewImage,
+  updateImage,
+  searchImage,
+  removeImage,
+} from '../services/imageService.js';
+import { Image, QueryImages } from '../types/images.js';
 import { RequestQueryID } from '../types/meta.js';
 
 interface BodyType {
@@ -18,9 +18,9 @@ async function search(
   reply: FastifyReply
 ) {
   try {
-    const { sort } = req.query as { sort: string };
-    const tags = await searchTag({ sort });
-    reply.send(tags);
+    const params = req.query as QueryImages;
+    const images = await searchImage(params);
+    reply.send(images);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -28,26 +28,27 @@ async function search(
 async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
     const { id } = req.query;
-    const tag = await viewTag(Number(id));
-    reply.send(tag);
+    const image = await viewImage(Number(id));
+    reply.send(image);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function create(req: FastifyRequest, reply: FastifyReply) {
+async function upload(req: FastifyRequest, reply: FastifyReply) {
   try {
-    const { name } = req.params as { name: string };
-    const tag = await createTag(name);
-    reply.send(tag);
+    console.log('upload', { req: req });
+    const files = await req.files();
+    // const result = await uploadImages(1, files);
+    // reply.send(result);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
 async function update(req: FastifyRequest, reply: FastifyReply) {
   try {
-    console.log('update tag', req.body);
-    const tag = await updateTag(req.body);
-    reply.send(tag);
+    const data = req.params as Image;
+    const image = await updateImage(data);
+    reply.send(image);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -55,11 +56,11 @@ async function update(req: FastifyRequest, reply: FastifyReply) {
 async function remove(req: FastifyRequest, reply: FastifyReply) {
   try {
     const { id } = req.params as { id: number };
-    const tag = await removeTag(id);
-    reply.send(tag);
+    const image = await removeImage(id);
+    reply.send(image);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
 
-export { search, view, create, update, remove };
+export { search, view, upload, update, remove };

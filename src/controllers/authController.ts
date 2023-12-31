@@ -2,8 +2,8 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { signin, login } from '../services/userService.js';
 
 interface BodyType {
-  username: { value: string };
-  password: { value: string };
+  username: string;
+  password: string;
 }
 async function registerUser(
   req: FastifyRequest<{ Body: BodyType }>,
@@ -12,7 +12,7 @@ async function registerUser(
   try {
     const username = req.body.username;
     const password = req.body.password;
-    const user = await signin(username.value, password.value);
+    const user = await signin(username, password);
     reply.send(user.access_token);
   } catch (error) {
     reply.code(401).send(error);
@@ -26,8 +26,8 @@ async function loginUser(
   try {
     const username = req.body.username;
     const password = req.body.password;
-    // console.log({username:username, password:password})
-    const access_token = await login(username.value, password.value);
+    // console.log('loginUser', {username:username, password:password.value})
+    const access_token = await login(username, password);
     reply.send({ access_token });
   } catch (error) {
     console.log({ error: error });

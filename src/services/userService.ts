@@ -16,6 +16,7 @@ async function signin(username: string, password: string) {
 }
 
 async function login(username: string, password: string) {
+  console.log('login', {username:username, password:password})
   const user = await prisma.user.findUnique({ where: { 'username': username } });
   const validUser = await validPassword(user, password)
   if (user && validUser) {

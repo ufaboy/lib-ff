@@ -1,9 +1,12 @@
+import { FastifyRequest } from 'fastify';
 import { ListMeta } from './meta.js';
 
-interface Series {
-  id?: number;
+interface BaseSeries {
   name: string;
-  url: string;
+  url: string | null;
+}
+interface Series extends BaseSeries {
+  id: number;
 }
 
 interface QuerySeries {
@@ -21,4 +24,17 @@ interface SeriesResponse {
   _meta: ListMeta;
 }
 
-export type { Series, QuerySeries, SeriesResponse };
+type RequestCreateSeries = FastifyRequest<{ Body: BaseSeries }>;
+type RequestUpdateSeries = FastifyRequest<{
+  Querystring: { id: string };
+  Body: BaseSeries;
+}>;
+
+export type {
+  Series,
+  BaseSeries,
+  QuerySeries,
+  SeriesResponse,
+  RequestCreateSeries,
+  RequestUpdateSeries,
+};

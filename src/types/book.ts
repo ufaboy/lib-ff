@@ -1,76 +1,112 @@
 import type { Tag } from './tag.js';
 import type { Author } from './author.js';
-import type { ListMeta } from './meta.js';
+import type { ListMeta, RequestFormField } from './meta.js';
 import type { Image } from './images.js';
 import type { Series } from './series.js';
+import { FastifyRequest } from 'fastify';
+import fastifyMultipart from '@fastify/multipart';
 
-interface Book {
-	[key: string]: string | number | undefined | Author | Series | Tag[] | Image[];
-	id?: number;
-	name: string;
-	description?: string;
-	text?: string;
-	source?: string;
-	rating?: number;
-	author?: Author;
-	series?: Series;
-	tags: Array<Tag>;
-	cover?: string;
-	bookmark?: number;
-	text_length?: number;
-	view_count?: number;
-	created_at?: number;
-	updated_at?: number;
-	last_read?: number;
-	images?: Image[];
+interface BaseBook {
+  name: string;
+  description: string | null;
+  text: string | null;
+  source: string | null;
+  rating: number | null;
+  author_id: number | null;
+  series_id: number | null;
+  tag_ids: Array<number>;
+  cover: string | null;
 }
-interface BookRaw {
-	id?: number;
-	name: string;
-	description?: string;
-	text?: string;
-	source?: string;
-	rating?: number;
-	author_id?: number;
-	series_id?: number;
-	tag_ids: Array<number>;
-	cover?: string;
-	bookmark?: number;
-	images?: Array<number>;
+interface Book {
+  [key: string]: string | number | null | Author | Series | Tag[] | Image[];
+  id: number;
+  name: string;
+  description: string | null;
+  text: string | null;
+  source: string | null;
+  rating: number | null;
+  author: Author | null;
+  series: Series | null;
+  tags: Array<Tag> | null;
+  cover: string | null;
+  images: Array<Image> | null;
+  text_length: number | null;
+  view_count: number | null;
+  updated_at: number | null;
+  last_read: number | null;
 }
 
 interface BookResponse {
-	items: Book[];
-	_meta: ListMeta;
-	_links: MetaLinks;
+  items: Book[];
+  _meta: ListMeta;
+  _links: MetaLinks;
 }
 
 interface MetaLinks {
-	first: { href: string };
-	last: { href: string };
-	next: { href: string };
-	self: { href: string };
+  first: { href: string };
+  last: { href: string };
+  next: { href: string };
+  self: { href: string };
 }
 
 interface QueryBooks {
-	[key: string]: string | number | undefined;
-	id?: number;
-	tag?: string;
-	view_count?: number;
-	name?: string;
-	text?: string;
-	rating?: number;
-	text_length?: number;
-	authorName?: string;
-	seriesName?: string;
-	size?: string;
-	updated_at?: number;
-	last_read?: number;
-	sort: string;
-	perPage: number;
-	page: number;
+  [key: string]: string | number | undefined;
+  id?: number;
+  tag?: string;
+  view_count?: number;
+  name?: string;
+  text?: string;
+  rating?: number;
+  text_length?: number;
+  authorName?: string;
+  seriesName?: string;
+  size?: string;
+  updated_at?: number;
+  last_read?: number;
+  sort: string;
+  perPage: number;
+  page: number;
 }
 
 type ExpandParams = Record<string, boolean | { select: { tag: boolean } }>;
 
-export type { Book, BookRaw, BookResponse, QueryBooks, ExpandParams };
+interface BookUpdateForm {
+  'Book[name]': RequestFormField;
+  'Book[description]': RequestFormField;
+  'Book[tag_ids][]': RequestFormField | RequestFormField[];
+  'Book[cover]': RequestFormField;
+  'Book[source]': RequestFormField;
+  'Book[author_id]': RequestFormField;
+  'Book[series_id]': RequestFormField;
+  'Book[rating]': RequestFormField;
+  'Book[text]': RequestFormField;
+  'Upload[imageFiles][]': AsyncIterableIterator<fastifyMultipart.MultipartFile>;
+}
+interface BookUpdateModel {
+  name: string;
+  description: string | null;
+  tag_ids: Array<number>;
+  source: string | null;
+  cover: string | null;
+  text: string | null;
+  author_id: number | null;
+  series_id: number | null;
+  rating: number | null;
+}
+type BookCreateRequest = FastifyRequest<{ Body: BookUpdateForm }>;
+type BookUpdateRequest = FastifyRequest<{
+  Querystring: { id: string };
+  Body: BookUpdateForm;
+}>;
+
+export type {
+  Book,
+  BaseBook,
+  BookResponse,
+  QueryBooks,
+  ExpandParams,
+  BookCreateRequest,
+  BookUpdateRequest,
+  BookUpdateForm,
+  BookUpdateModel,
+};

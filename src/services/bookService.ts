@@ -1,11 +1,45 @@
 import { PrismaClient } from '@prisma/client';
-import { Book, BookRaw, ExpandParams, QueryBooks } from '../types/book.js';
+import { Book, BaseBook, QueryBooks } from '../types/book.js';
+import { Image } from '../types/images.js';
+import { Author } from '../types/author.js';
+import { BookTagShrink, Tag } from '../types/tag.js';
+import { Series } from '../types/series.js';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['query'],
+});
 
-async function createBook(data: BookRaw) {
+async function createBook(data: BaseBook) {
   const book = await prisma.book.create({
-    data: data,
+    include: {
+      author: true,
+      series: true,
+      image: true,
+      book_tag: {
+        select: {
+          tag: true,
+        },
+      },
+    },
+    data: {
+      name: data.name,
+      description: data.description,
+      source: data.source,
+      cover: data.cover,
+      rating: data.rating,
+      text: data.text,
+      text_length: data.text?.length,
+      author_id: data.author_id,
+      series_id: data.series_id,
+      updated_at: Date.now() / 1000,
+      book_tag: {
+        createMany: {
+          data: data.tag_ids.map((item) => {
+            return { tag_id: item };
+          }),
+        },
+      },
+    },
   });
   if (book) {
     return prepareBook(book);
@@ -13,15 +47,19 @@ async function createBook(data: BookRaw) {
   throw new Error('failed to create book');
 }
 
-async function viewBook(id: number, params?: ExpandParams) {
-  
-  // const book = await prisma.book.findUnique({
-  //   where: { id: id },
-  //   include: params,
-  // });
+async function viewBook(id: number) {
   const book = await prisma.book.update({
     where: { id: id },
-    include: params,
+    include: {
+      author: true,
+      series: true,
+      image: true,
+      book_tag: {
+        select: {
+          tag: true,
+        },
+      },
+    },
     data: {
       view_count: {
         increment: 1,
@@ -34,10 +72,19 @@ async function viewBook(id: number, params?: ExpandParams) {
   throw new Error('book not found');
 }
 
-async function updateBook(data: Book, params?: ExpandParams) {
+async function updateBook(bookID: number, data: BaseBook) {
   const book = await prisma.book.update({
-    where: { id: data.id },
-    include: params,
+    where: { id: bookID },
+    include: {
+      author: true,
+      series: true,
+      image: true,
+      book_tag: {
+        select: {
+          tag: true,
+        },
+      },
+    },
     data: {
       name: data.name,
       description: data.description,
@@ -45,11 +92,21 @@ async function updateBook(data: Book, params?: ExpandParams) {
       cover: data.cover,
       rating: data.rating,
       text: data.text,
-      author_id: data.author?.id,
-      series_id: data.series?.id,
-      updated_at: Date.now() / 1000
+      text_length: data.text?.length,
+      author_id: data.author_id,
+      series_id: data.series_id,
+      updated_at: Date.now() / 1000,
+      book_tag: {
+        deleteMany: {},
+        createMany: {
+          data: data.tag_ids.map((item) => {
+            return { tag_id: item };
+          }),
+        },
+      },
     },
   });
+
   if (book) {
     return prepareBook(book);
   }
@@ -182,7 +239,6 @@ async function searchBook(params: QueryBooks) {
       source: true,
       rating: true,
       cover: true,
-      bookmark: true,
       series: true,
       author: true,
       text_length: true,
@@ -218,23 +274,30 @@ async function removeBook(id: number) {
   return await prisma.book.delete({ where: { id: id } });
 }
 
+function convertTags(tags: BookTagShrink[] | null) {
+  if (tags) {
+    return tags.filter((item) => item.tag).map((bt) => bt.tag as Tag);
+  }
+  return [];
+}
+
 function prepareBook(book: {
-  book_tag?: any;
-  id?: any;
-  name?: any;
-  description?: any;
-  source?: any;
-  rating?: any;
-  cover?: any;
-  bookmark?: any;
-  series?: any;
-  author?: any;
-  text?: any;
-  text_length?: any;
-  view_count?: any;
-  updated_at?: any;
-  last_read?: any;
-}) {
+  book_tag: Array<BookTagShrink> | null;
+  id: number;
+  name: string;
+  description: string | null;
+  source: string | null;
+  rating: number | null;
+  cover: string | null;
+  series: Series | null;
+  author: Author | null;
+  text?: string | null;
+  image?: Array<Image> | null;
+  text_length: number | null;
+  view_count: number;
+  updated_at: number | null;
+  last_read: number | null;
+}): Book {
   const {
     id,
     name,
@@ -242,15 +305,16 @@ function prepareBook(book: {
     source,
     rating,
     cover,
-    bookmark,
     series,
     author,
     text,
+    image,
     text_length,
     view_count,
     updated_at,
     last_read,
   } = book;
+
   return {
     id,
     name,
@@ -258,15 +322,15 @@ function prepareBook(book: {
     source,
     rating,
     cover,
-    bookmark,
     series,
     author,
-    text,
+    text: text ?? null,
+    images: image ?? [],
     text_length,
     view_count,
     updated_at,
     last_read,
-    tags: book.book_tag?.map((bt: { tag: any }) => bt.tag),
+    tags: convertTags(book.book_tag),
   };
 }
 export { createBook, viewBook, updateBook, searchBook, removeBook };

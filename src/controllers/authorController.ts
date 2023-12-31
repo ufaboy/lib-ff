@@ -6,7 +6,8 @@ import {
   searchAuthor,
   removeAuthor,
 } from '../services/authorService.js';
-import { Author, QueryAuthor } from '../types/author.js';
+import { QueryAuthor, RequestCreateAuthor, RequestUpdateAuthor } from '../types/author.js';
+import { RequestQueryID } from '../types/meta.js';
 
 interface BodyType {
   username: { value: string };
@@ -17,44 +18,43 @@ async function search(
   reply: FastifyReply
 ) {
   try {
-    const params = req.query as QueryAuthor
+    const params = req.query as QueryAuthor;
     const authors = await searchAuthor(params);
     reply.send(authors);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function view(req: FastifyRequest, reply: FastifyReply) {
+async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
-    const {id} = req.params as {id: number}
-    const author = await viewAuthor(id);
+    const { id } = req.query;
+    const author = await viewAuthor(Number(id));
     reply.send(author);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function create(req: FastifyRequest, reply: FastifyReply) {
+async function create(req: RequestCreateAuthor, reply: FastifyReply) {
   try {
-    const {name, url} = req.params as Author
-    const author = await createAuthor({name, url});
+    const author = await createAuthor(req.body);
     reply.send(author);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function update(req: FastifyRequest, reply: FastifyReply) {
+async function update(req: RequestUpdateAuthor, reply: FastifyReply) {
   try {
-    const data = req.params as Author
-    const author = await updateAuthor(data);
+    const { id } = req.query;
+    const author = await updateAuthor(Number(id), req.body);
     reply.send(author);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function remove(req: FastifyRequest, reply: FastifyReply) {
+async function remove(req: RequestQueryID, reply: FastifyReply) {
   try {
-    const {id} = req.params as {id: number}
-    const author = await removeAuthor(id);
+    const { id } = req.query;
+    const author = await removeAuthor(Number(id));
     reply.send(author);
   } catch (error) {
     reply.code(404).send(error);

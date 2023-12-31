@@ -4,7 +4,7 @@ import { ListMeta } from './meta.js';
 interface Image {
 	id: number;
 	book_id: number;
-	book: Book;
+	// book: Book | null;
 	path: string;
 	file_name: string;
 }

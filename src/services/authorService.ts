@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { Author, QueryAuthor } from '../types/author.js';
+import { BaseAuthor, QueryAuthor } from '../types/author.js';
 
 const prisma = new PrismaClient();
 
-async function createAuthor(data: Author) {
+async function createAuthor(data: BaseAuthor) {
   const author = await prisma.author.create({
     data: data,
   });
@@ -21,9 +21,9 @@ async function viewAuthor(id: number) {
   throw new Error('author not found');
 }
 
-async function updateAuthor(data: Author) {
+async function updateAuthor(id: number, data: BaseAuthor) {
   const author = await prisma.author.update({
-    where: { id: data.id },
+    where: { id: id },
     data: {
       name: data.name,
     },
