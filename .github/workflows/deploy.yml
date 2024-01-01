@@ -8,7 +8,7 @@ on:
 env:
   DEPLOY_PATH: ${{ secrets.PROJECT_PATH }}
   BUILD_SCRIPT: npm run build:ts
-  BUILD_SCRIPT_OUTPUT: dist
+  BUILD_SCRIPT_OUTPUT: .
 
 jobs:
   deploy:
@@ -40,8 +40,7 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          source: "*"
-          # source: ${{ env.BUILD_SCRIPT_OUTPUT }}
+          source: ${{ env.BUILD_SCRIPT_OUTPUT }}
           target: /${{ env.DEPLOY_PATH }}
           strip_components: 1
       - name: Print Info
