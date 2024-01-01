@@ -29,6 +29,9 @@ jobs:
       # Собираем приложение
       - name: Build Appliction
         run: $BUILD_SCRIPT
+      - name: Copy package.json
+        run: cp package.json ${{ env.BUILD_SCRIPT_OUTPUT }}/
+
       # Доставляем собранное приложение на сервер
       - name: Deploy to Server
         uses: appleboy/scp-action@master
