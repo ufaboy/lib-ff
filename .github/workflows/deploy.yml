@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DEPLOY_PATH: ${{ secrets.PROJECT_PATH }}
+  BUILD_SCRIPT: npm run build:ts
+  BUILD_SCRIPT_OUTPUT: dist
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Делаем checkout текущей ветки
+      - uses: actions/checkout@v2
+      # Устанавливаем Node.JS для сборки приложения
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '20'
+      # Устанавливаем зависимости для сборки
+      - name: Install Dependencies
+        run: npm i
+      # Устанавливаем env
+      - name: Install env
+        run: echo ${{ secrets.ENV_FILE }} > .env.production
+      # Собираем приложение
+      - name: Build Appliction
+        run: $BUILD_SCRIPT
+      # Доставляем собранное приложение на сервер
+      - name: Deploy to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          source: ${{ env.BUILD_SCRIPT_OUTPUT }}
+          target: /${{ env.DEPLOY_PATH }}
+          strip_components: 1
+      - name: Print Info
+        run: echo "Deployed at hosting/"
