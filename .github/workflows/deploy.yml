@@ -40,7 +40,6 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          source: /
           # source: ${{ env.BUILD_SCRIPT_OUTPUT }}
           target: /${{ env.DEPLOY_PATH }}
           strip_components: 1
