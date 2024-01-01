@@ -21,16 +21,16 @@ jobs:
         with:
           node-version: '20'
       # Устанавливаем зависимости для сборки
-      - name: Install Dependencies
-        run: npm i
+      # - name: Install Dependencies
+      #   run: npm i
       # Устанавливаем env
       - name: Install env
         run: echo ${{ secrets.ENV_FILE }} > .env.production
       # Собираем приложение
-      - name: Build Appliction
-        run: $BUILD_SCRIPT
-      - name: Copy package.json
-        run: cp package.json ${{ env.BUILD_SCRIPT_OUTPUT }}/
+      # - name: Build Appliction
+      #   run: $BUILD_SCRIPT
+      # - name: Copy package.json
+      #   run: cp package.json ${{ env.BUILD_SCRIPT_OUTPUT }}/
 
       # Доставляем собранное приложение на сервер
       - name: Deploy to Server
@@ -40,7 +40,8 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          source: ${{ env.BUILD_SCRIPT_OUTPUT }}
+          source: /
+          # source: ${{ env.BUILD_SCRIPT_OUTPUT }}
           target: /${{ env.DEPLOY_PATH }}
           strip_components: 1
       - name: Print Info
