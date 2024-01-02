@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Tag } from '../types/tag.js';
+import { Tag, BaseTag } from '../types/tag.js';
 
 const prisma = new PrismaClient();
 
@@ -21,19 +21,18 @@ async function viewTag(id: number) {
   }
   throw new Error('tag not found');
 }
-async function updateTag(reqBody: unknown ) {
-  // const data = reqBody['Tag[name]']
-  // console.log('updateTag', data)
-  // const tag = await prisma.tag.update({
-  //   where: { id: data.id },
-  //   data: {
-  //     name: data.name,
-  //   },
-  // });
-  // if (tag) {
-  //   return tag;
-  // }
-  // throw new Error('tag not found');
+async function updateTag(id: number, data: BaseTag ) {
+  const tag = await prisma.tag.update({
+    where: { id: id },
+    data: {
+      name: data.name,
+      description: data.description
+    },
+  });
+  if (tag) {
+    return tag;
+  }
+  throw new Error('tag not found');
 }
 async function searchTag(params: { sort: string }) {
   let { sort = 'id' } = params;

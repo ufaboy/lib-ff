@@ -6,8 +6,8 @@ import {
   searchTag,
   removeTag,
 } from '../services/tagService.js';
-import { Tag } from '../types/tag.js';
 import { RequestQueryID } from '../types/meta.js';
+import { RequestCreateTag, RequestUpdateTag } from '../types/tag.js';
 
 interface BodyType {
   username: { value: string };
@@ -34,7 +34,7 @@ async function view(req: RequestQueryID, reply: FastifyReply) {
     reply.code(404).send(error);
   }
 }
-async function create(req: FastifyRequest, reply: FastifyReply) {
+async function create(req: RequestCreateTag, reply: FastifyReply) {
   try {
     const { name } = req.params as { name: string };
     const tag = await createTag(name);
@@ -43,10 +43,10 @@ async function create(req: FastifyRequest, reply: FastifyReply) {
     reply.code(404).send(error);
   }
 }
-async function update(req: FastifyRequest, reply: FastifyReply) {
+async function update(req: RequestUpdateTag, reply: FastifyReply) {
   try {
-    console.log('update tag', req.body);
-    const tag = await updateTag(req.body);
+    const { id } = req.query;
+    const tag = await updateTag(Number(id), req.body);
     reply.send(tag);
   } catch (error) {
     reply.code(404).send(error);

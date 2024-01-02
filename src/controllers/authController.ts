@@ -26,7 +26,6 @@ async function loginUser(
   try {
     const username = req.body.username;
     const password = req.body.password;
-    // console.log('loginUser', {username:username, password:password.value})
     const access_token = await login(username, password);
     reply.send({ access_token });
   } catch (error) {

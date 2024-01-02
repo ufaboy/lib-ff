@@ -16,7 +16,6 @@ async function signin(username: string, password: string) {
 }
 
 async function login(username: string, password: string) {
-  console.log('login', {username:username, password:password})
   const user = await prisma.user.findUnique({ where: { 'username': username } });
   const validUser = await validPassword(user, password)
   if (user && validUser) {
@@ -33,10 +32,14 @@ async function validPassword(user: User | null, password: string) {
   return user.password === hash;
 }
 
+async function validToken(token: string) {
+  return await prisma.user.findFirst({ where: { 'access_token': token } });
+}
+
 function generateRandomString(length: number): string {
   return randomBytes(Math.ceil(length / 2))
     .toString('hex') // конвертируем в шестнадцатеричный формат
     .slice(0, length); // обрезаем до нужной длины
 }
 
-export { signin, login };
+export { signin, login, validToken };

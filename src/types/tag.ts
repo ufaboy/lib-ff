@@ -1,12 +1,13 @@
+import { FastifyRequest } from "fastify";
+
+interface BaseTag {
+  name: string;
+  description?: string;
+}
 interface Tag {
   id: number;
   name: string;
   description: string | null;
-}
-interface TagRaw {
-  id?: number;
-  name: string;
-  description?: string;
 }
 
 interface BookTagJunc {
@@ -22,4 +23,7 @@ interface BookTagShrink {
   tag: Tag
 }
 
-export type { Tag, BookTag, BookTagJunc, TagRaw, BookTagShrink };
+type RequestCreateTag = FastifyRequest<{ Body: BaseTag }>;
+type RequestUpdateTag = FastifyRequest<{ Querystring: { id: string }, Body: BaseTag }>;
+
+export type { Tag, BookTag, BookTagJunc, BaseTag, BookTagShrink, RequestCreateTag, RequestUpdateTag };

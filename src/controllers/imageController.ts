@@ -36,7 +36,6 @@ async function view(req: RequestQueryID, reply: FastifyReply) {
 }
 async function upload(req: FastifyRequest, reply: FastifyReply) {
   try {
-    console.log('upload', { req: req });
     const files = await req.files();
     // const result = await uploadImages(1, files);
     // reply.send(result);
