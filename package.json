@@ -2,7 +2,7 @@
   "type": "module",
   "name": "lib-ff",
   "description": "This project was bootstrapped with Fastify-CLI.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "app.ts",
   "directories": {
     "test": "test"

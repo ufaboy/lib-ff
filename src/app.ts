@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 
 export type AppOptions = {
   http2?: boolean,
+  logger?: boolean,
   https?: Object
 } & Partial<AutoloadPluginOptions>;
 
@@ -17,8 +18,8 @@ const options: AppOptions = process.env.NODE_ENV === 'production' ? {
   http2: true,
   https: {
     allowHTTP1: true,
-    key: fs.readFileSync(`${process.env.DATABASE_URL}/privkey.pem`),
-    cert: fs.readFileSync(`${process.env.DATABASE_URL}/fullchain.pem`)
+    key: fs.readFileSync(`${process.env.CERT_DIR}/privkey.pem`),
+    cert: fs.readFileSync(`${process.env.CERT_DIR}/fullchain.pem`)
   }
 } : {};
 
