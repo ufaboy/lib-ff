@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload';
 import { FastifyPluginAsync } from 'fastify';
 import { fileURLToPath } from 'url';
@@ -7,13 +8,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export type AppOptions = {
-  http2: boolean
+  http2?: boolean,
+  https?: Object
 } & Partial<AutoloadPluginOptions>;
 
 // Pass --options via CLI arguments in command to enable these options.
-const options: AppOptions = {
-  http2: true
-};
+const options: AppOptions = process.env.NODE_ENV === 'production' ? {
+  http2: true,
+  https: {
+    allowHTTP1: true,
+    key: fs.readFileSync(`${process.env.DATABASE_URL}/privkey.pem`),
+    cert: fs.readFileSync(`${process.env.DATABASE_URL}/fullchain.pem`)
+  }
+} : {};
 
 const app: FastifyPluginAsync<AppOptions> = async (
   fastify,
