@@ -9,6 +9,12 @@ export default fp(async (fastify: FastifyInstance) => {
       if (request.routeOptions.url.startsWith('/api/auth/')) {
         return;
       }
+      if (request.url.includes('/media/')) {
+        const referer = request.headers.referer || '';
+        if (referer.startsWith(process.env.BASE_URL as string)) {
+          return;
+        }
+      }
       const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
       if (!methods.includes(request.method)) {
         return;

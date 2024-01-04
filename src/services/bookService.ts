@@ -6,7 +6,7 @@ import { BookTagShrink, Tag } from '../types/tag.js';
 import { Series } from '../types/series.js';
 
 const prisma = new PrismaClient({
-  log: ['query'],
+  // log: ['query'],
 });
 
 async function createBook(data: BaseBook) {

@@ -1,4 +1,6 @@
 .env
+.env.production
+/storage/*
 # Logs
 logs
 *.log
@@ -66,4 +68,4 @@ test/types/index.js
 dist
 
 
-/storage/*
+
