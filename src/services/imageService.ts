@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Image, QueryImages } from '../types/images.js';
+import { Image, ImageFromDB, QueryImages } from '../types/images.js';
 import { pipeline } from 'stream';
 import util from 'node:util';
 import fs from 'fs';
@@ -11,11 +11,11 @@ async function uploadImages(
   bookID: number,
   files?: AsyncIterableIterator<fastifyMultipart.MultipartFile>
 ) {
-  if(!files) return null;
+  if (!files) return null;
   const images = [];
   const pump = util.promisify(pipeline);
   const dirPath = `media/book_${String(bookID).padStart(3, '0')}`;
-  const fullDirPAth = `storage/${dirPath}`
+  const fullDirPAth = `storage/${dirPath}`;
   if (!fs.existsSync(fullDirPAth)) {
     fs.mkdirSync(fullDirPAth, { recursive: true });
   }
@@ -58,7 +58,7 @@ async function updateImage(data: Image) {
 }
 
 async function searchImage(params: QueryImages) {
-  const { file_name, book_id, page = 1, perPage = 10 } = params;
+  const { file_name, book_id, page, perPage } = params;
   let { sort = 'id' } = params;
   let sortWay = 'asc';
   if (sort[0] === '-') {
@@ -76,33 +76,74 @@ async function searchImage(params: QueryImages) {
   if (book_id) {
     whereConditions.push({
       book_id: {
-        equals: book_id,
+        equals: Number(book_id),
       },
     });
   }
   const whereQuery = whereConditions.length ? { OR: whereConditions } : {};
   const images = await prisma.image.findMany({
     where: whereQuery,
-    skip: (page - 1) * perPage,
-    take: Number(perPage),
+    include: {
+      book: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    skip:
+      page !== undefined && perPage !== undefined ? (page - 1) * perPage : 0,
+    take: perPage ? Number(perPage) : undefined,
     orderBy: {
       [sort]: sortWay,
     },
   });
   const total = await prisma.image.count({ where: whereQuery });
   return {
-    items: images,
+    items: prepageImages(images),
     _meta: {
       currentPage: Number(page),
-      pageCount: Math.ceil(total / perPage),
+      pageCount: Math.ceil(total / (perPage ?? 1)),
       perPage: Number(perPage),
       totalCount: total,
     },
   };
 }
 
+async function totalImageBooks() {
+  const result = await prisma.image.groupBy({
+    by: ['book_id'],
+    _count: {
+      book_id: true
+    }
+  });
+  return result.map(item => ({
+    book_id: item.book_id,
+    images_count: item._count.book_id
+  }))
+}
+
 async function removeImage(id: number) {
   return await prisma.image.delete({ where: { id: id } });
 }
 
-export { uploadImages, viewImage, updateImage, searchImage, removeImage };
+function prepageImages(images: Array<ImageFromDB>) {
+  return images.map((img) => {
+    return {
+      id: img.id,
+      file_name: img.file_name,
+      path: img.path,
+      book: img.book,
+    };
+  });
+}
+
+export {
+  uploadImages,
+  viewImage,
+  updateImage,
+  searchImage,
+  removeImage,
+  prepageImages,
+  totalImageBooks
+};

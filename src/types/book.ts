@@ -1,7 +1,7 @@
-import type { Tag } from './tag.js';
+import type { BookTagShrink, Tag } from './tag.js';
 import type { Author } from './author.js';
 import type { ListMeta, RequestFormField } from './meta.js';
-import type { Image } from './images.js';
+import type { Image, ImageFromDB } from './images.js';
 import type { Series } from './series.js';
 import { FastifyRequest } from 'fastify';
 import fastifyMultipart from '@fastify/multipart';
@@ -93,6 +93,26 @@ interface BookUpdateModel {
   series_id: number | null;
   rating: number | null;
 }
+
+interface BookFromDB {
+  book_tag: Array<BookTagShrink> | null;
+  id: number;
+  name: string;
+  description: string | null;
+  source: string | null;
+  rating: number | null;
+  cover: string | null;
+  series: Series | null;
+  author: Author | null;
+  text?: string | null;
+  image?: Array<ImageFromDB> | null;
+  text_length: number | null;
+  view_count: number;
+  updated_at: number | null;
+  last_read: number | null;
+}
+
+
 type BookCreateRequest = FastifyRequest<{ Body: BookUpdateForm }>;
 type BookUpdateRequest = FastifyRequest<{
   Querystring: { id: string };
@@ -102,6 +122,7 @@ type BookUpdateRequest = FastifyRequest<{
 export type {
   Book,
   BaseBook,
+  BookFromDB,
   BookResponse,
   QueryBooks,
   ExpandParams,

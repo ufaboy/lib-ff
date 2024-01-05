@@ -5,6 +5,7 @@ import {
   updateImage,
   searchImage,
   removeImage,
+  totalImageBooks,
 } from '../services/imageService.js';
 import { Image, QueryImages } from '../types/images.js';
 import { RequestQueryID } from '../types/meta.js';
@@ -61,5 +62,13 @@ async function remove(req: FastifyRequest, reply: FastifyReply) {
     reply.code(404).send(error);
   }
 }
+async function total(req: FastifyRequest, reply: FastifyReply) {
+  try {
+    const result = await totalImageBooks();
+    reply.send(result);
+  } catch (error) {
+    reply.code(404).send(error);
+  }
+}
 
-export { search, view, upload, update, remove };
+export { search, view, upload, update, remove, total };

@@ -1,9 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { Book, BaseBook, QueryBooks } from '../types/book.js';
-import { Image } from '../types/images.js';
-import { Author } from '../types/author.js';
+import { Book, BaseBook, QueryBooks, BookFromDB } from '../types/book.js';
 import { BookTagShrink, Tag } from '../types/tag.js';
-import { Series } from '../types/series.js';
 
 const prisma = new PrismaClient({
   // log: ['query'],
@@ -281,23 +278,7 @@ function convertTags(tags: BookTagShrink[] | null) {
   return [];
 }
 
-function prepareBook(book: {
-  book_tag: Array<BookTagShrink> | null;
-  id: number;
-  name: string;
-  description: string | null;
-  source: string | null;
-  rating: number | null;
-  cover: string | null;
-  series: Series | null;
-  author: Author | null;
-  text?: string | null;
-  image?: Array<Image> | null;
-  text_length: number | null;
-  view_count: number;
-  updated_at: number | null;
-  last_read: number | null;
-}): Book {
+function prepareBook(book: BookFromDB): Book {
   const {
     id,
     name,
@@ -325,7 +306,19 @@ function prepareBook(book: {
     series,
     author,
     text: text ?? null,
-    images: image ?? [],
+    images: image
+      ? image.map((img) => {
+          return {
+            id: img.id,
+            file_name: img.file_name,
+            path: img.path,
+            book: {
+              id: id,
+              name: name
+            },
+          };
+        })
+      : [],
     text_length,
     view_count,
     updated_at,
