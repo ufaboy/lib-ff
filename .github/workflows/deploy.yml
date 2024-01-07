@@ -48,6 +48,6 @@ jobs:
             docker rm lib-ff || true
             docker load < /tmp/lib-ff.tar
             docker run -d --name lib-ff -p 3000:3000 lib-ff
-            
+
       - name: Print Info
-        run: echo "Deployed at hosting/"
+        run: echo "Deployed at hosting"
