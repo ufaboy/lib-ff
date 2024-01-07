@@ -17,6 +17,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+COPY .env .env
 RUN npx prisma generate
 USER root
 RUN apk add --no-cache mc
