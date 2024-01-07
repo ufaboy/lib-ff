@@ -20,6 +20,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '20'
+
+      - name: Install env
+        run: echo ${{ secrets.ENV_FILE }} > .env
+
       - name: Build Docker image
         run: docker build --target prod-stage -t lib-ff .
 
