@@ -47,7 +47,7 @@ jobs:
             docker stop lib-ff || true
             docker rm lib-ff || true
             docker load < /tmp/lib-ff.tar
-            docker run -d --name lib-ff -p 3000:3000 -v ${{ CERT_PATH }}:certs lib-ff
+            docker run -d --name lib-ff -p 3000:3000 -v ${{ CERT_PATH }}:certs -v /var/www/lib-api/storage:storage lib-ff
 
       - name: Print Info
         run: echo "Deployed at hosting"
