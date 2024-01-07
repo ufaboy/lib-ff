@@ -20,7 +20,7 @@ jobs:
           node-version: '20'
 
       - name: Install env
-        run: echo ${{ secrets.ENV_FILE }} > .env
+        run: echo ${{ secrets.ENV_FILE }} | base64 -d > .env
 
       - name: Build Docker image
         run: docker build --target prod-stage -t lib-ff .
