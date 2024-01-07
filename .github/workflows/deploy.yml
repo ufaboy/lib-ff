@@ -20,28 +20,54 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '20'
-      # Устанавливаем зависимости для сборки
-      - name: Install Dependencies
-        run: npm i
-      # Устанавливаем env
-      - name: Install env
-        run: echo ${{ secrets.ENV_FILE }} > .env
-      # Собираем приложение
-      - name: Build Appliction
-        run: $BUILD_SCRIPT
-      - name: Copy package.json
-        run: cp package.json ${{ env.BUILD_SCRIPT_OUTPUT }}/
+      - name: Build Docker image
+        run: docker build --target prod-stage -t lib-ff .
 
-      # Доставляем собранное приложение на сервер
-      - name: Deploy to Server
+      - name: Save Docker image
+        run: docker save lib-ff > lib-ff.tar
+
+      - name: Copy Docker image to VPS
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
-          port: ${{ secrets.PORT }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          source: ${{ env.BUILD_SCRIPT_OUTPUT }}
-          target: /${{ env.DEPLOY_PATH }}
-          strip_components: 1
+          source: "lib-ff.tar"
+          target: "/tmp"
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          script: |
+            docker stop lib-ff || true
+            docker rm lib-ff || true
+            docker load < /tmp/lib-ff.tar
+            docker run -d --name lib-ff -p 80:3000 lib-ff
+      # # Устанавливаем зависимости для сборки
+      # - name: Install Dependencies
+      #   run: npm i
+      # # Устанавливаем env
+      # - name: Install env
+      #   run: echo ${{ secrets.ENV_FILE }} > .env
+      # # Собираем приложение
+      # - name: Build Appliction
+      #   run: $BUILD_SCRIPT
+      # - name: Copy package.json
+      #   run: cp package.json ${{ env.BUILD_SCRIPT_OUTPUT }}/
+
+      # Доставляем собранное приложение на сервер
+      # - name: Deploy to Server
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     port: ${{ secrets.PORT }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.SSHKEY }}
+      #     source: ${{ env.BUILD_SCRIPT_OUTPUT }}
+      #     target: /${{ env.DEPLOY_PATH }}
+      #     strip_components: 1
       - name: Print Info
         run: echo "Deployed at hosting/"

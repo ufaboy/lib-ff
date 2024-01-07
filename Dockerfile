@@ -1,20 +1,24 @@
-# Использование официального образа Node.js в качестве базового
-FROM node:20
-
-# Установка рабочей директории в контейнере
+# Development
+FROM node:20-alpine as dev-stage
 WORKDIR /app
-
-# Копирование файлов 'package.json' и 'package-lock.json' (если есть)
 COPY package*.json ./
-
-# Установка зависимостей проекта
 RUN npm install
-
-# Копирование файлов приложения в контейнер
 COPY . .
-
-# Ваше приложение будет запускаться на порту 3000
+RUN npx prisma generate
+USER root
+RUN apk add --no-cache mc
 EXPOSE 3000
+CMD ["npm", "run", "dev"]
 
-# Команда для запуска приложения
-CMD ["npm", "start"]
+# Production
+FROM node:20-alpine as prod-stage
+WORKDIR /app
+# COPY --from=dev-stage /app /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npx prisma generate
+USER root
+RUN apk add --no-cache mc
+EXPOSE 3000
+CMD ["npm", "run", "start"]
