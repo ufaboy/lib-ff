@@ -6,7 +6,7 @@ RUN npm install
 COPY . .
 RUN npx prisma generate
 USER root
-RUN apk add --no-cache mc
+RUN apk add --no-cache mc mysql-client
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
@@ -20,6 +20,6 @@ COPY . .
 COPY .env .env
 RUN npx prisma generate
 USER root
-RUN apk add --no-cache mc
+RUN apk add --no-cache mc mysql-client
 EXPOSE 3000
 CMD ["npm", "run", "start"]
