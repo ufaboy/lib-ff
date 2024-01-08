@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { Book, BaseBook, QueryBooks, BookFromDB } from '../types/book.js';
 import { BookTagShrink, Tag } from '../types/tag.js';
@@ -105,6 +107,7 @@ async function updateBook(bookID: number, data: BaseBook) {
   });
 
   if (book) {
+    saveTextToFile(bookID, book.text);
     return prepareBook(book);
   }
   throw new Error('book not found');
@@ -314,7 +317,7 @@ function prepareBook(book: BookFromDB): Book {
             path: img.path,
             book: {
               id: id,
-              name: name
+              name: name,
             },
           };
         })
@@ -326,4 +329,17 @@ function prepareBook(book: BookFromDB): Book {
     tags: convertTags(book.book_tag),
   };
 }
+
+function saveTextToFile(bookID: number, text: string | null) {
+  if (!text) {
+    return null;
+  }
+  const fileName = `${String(bookID).padStart(3, '0')}.html`;
+  const filePath = path.join('/app/storage/books', fileName);
+  console.log('saveTextToFile', filePath);
+  fs.writeFile(filePath, text, (err) => {
+    return err ?? true;
+  });
+}
+
 export { createBook, viewBook, updateBook, searchBook, removeBook };
