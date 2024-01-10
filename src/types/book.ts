@@ -80,7 +80,7 @@ interface BookUpdateForm {
   'Book[series_id]': RequestFormField;
   'Book[rating]': RequestFormField;
   'Book[text]': RequestFormField;
-  'Upload[imageFiles][]': AsyncIterableIterator<fastifyMultipart.MultipartFile>;
+  'Upload[imageFiles][]': AsyncIterableIterator<fastifyMultipart.MultipartFile> | fastifyMultipart.MultipartFile;
 }
 interface BookUpdateModel {
   name: string;

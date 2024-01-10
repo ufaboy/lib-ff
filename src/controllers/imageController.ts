@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import {
-  uploadImages,
+  removeImagesAll,
   viewImage,
   updateImage,
   searchImage,
@@ -55,9 +55,18 @@ async function update(req: FastifyRequest, reply: FastifyReply) {
 }
 async function remove(req: FastifyRequest, reply: FastifyReply) {
   try {
-    const { id } = req.params as { id: number };
-    const image = await removeImage(id);
+    const { id } = req.query as { id: string };
+    const image = await removeImage(Number(id));
     reply.send(image);
+  } catch (error) {
+    reply.code(404).send(error);
+  }
+}
+async function removAll(req: FastifyRequest, reply: FastifyReply) {
+  try {
+    const { bookId } = req.query as { bookId: string };
+    const result = await removeImagesAll(Number(bookId));
+    reply.send(result);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -71,4 +80,4 @@ async function total(req: FastifyRequest, reply: FastifyReply) {
   }
 }
 
-export { search, view, upload, update, remove, total };
+export { search, view, upload, update, remove, removAll, total };

@@ -4,8 +4,31 @@ import { pipeline } from 'stream';
 import util from 'node:util';
 import fs from 'fs';
 import fastifyMultipart from '@fastify/multipart';
+import multipart from '@fastify/multipart';
+import { RequestFormField } from '../types/meta.js';
 
 const prisma = new PrismaClient();
+const pump = util.promisify(pipeline);
+
+async function uploadImage(part: multipart.MultipartFile) {
+  const bookID = part.fields.bookID as unknown as RequestFormField;
+  const dirPath = `media/book_${String(bookID.value).padStart(3, '0')}`;
+  const fullDirPAth = `storage/${dirPath}`;
+  if (!fs.existsSync(fullDirPAth)) {
+    fs.mkdirSync(fullDirPAth, { recursive: true });
+  }
+  await pump(
+    part.file,
+    fs.createWriteStream(`${fullDirPAth}/${part.filename}`)
+  );
+  await prisma.image.create({
+    data: {
+      file_name: part.filename,
+      path: dirPath,
+      book_id: Number(bookID.value),
+    },
+  });
+}
 
 async function uploadImages(
   bookID: number,
@@ -13,25 +36,28 @@ async function uploadImages(
 ) {
   if (!files) return null;
   const images = [];
-  const pump = util.promisify(pipeline);
+
   const dirPath = `media/book_${String(bookID).padStart(3, '0')}`;
   const fullDirPAth = `storage/${dirPath}`;
   if (!fs.existsSync(fullDirPAth)) {
     fs.mkdirSync(fullDirPAth, { recursive: true });
   }
-
+  console.log('uploadImages', files);
   for await (const part of files) {
-    const fileName = part.filename;
-    await pump(part.file, fs.createWriteStream(`${fullDirPAth}/${fileName}`));
-
-    const image = await prisma.image.create({
-      data: {
-        file_name: fileName,
-        path: dirPath,
-        book_id: bookID,
-      },
-    });
-    images.push(image);
+    try {
+      const fileName = part.filename;
+      await pump(part.file, fs.createWriteStream(`${fullDirPAth}/${fileName}`));
+      const image = await prisma.image.create({
+        data: {
+          file_name: fileName,
+          path: dirPath,
+          book_id: bookID,
+        },
+      });
+      images.push(image);
+    } catch (error) {
+      console.error('Error in file upload:', error);
+    }
   }
   return images;
 }
@@ -114,17 +140,42 @@ async function totalImageBooks() {
   const result = await prisma.image.groupBy({
     by: ['book_id'],
     _count: {
-      book_id: true
-    }
+      book_id: true,
+    },
   });
-  return result.map(item => ({
+  return result.map((item) => ({
     book_id: item.book_id,
-    images_count: item._count.book_id
-  }))
+    images_count: item._count.book_id,
+  }));
 }
 
 async function removeImage(id: number) {
-  return await prisma.image.delete({ where: { id: id } });
+  const result = await prisma.image.delete({ where: { id: id } });
+  if (result) {
+    const dirPath = `media/book_${String(result.book_id).padStart(3, '0')}`;
+    const fullDirPAth = `storage/${dirPath}`;
+    const filePath = `${fullDirPAth}/${result.file_name}`;
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
+      return true;
+    });
+  }
+}
+
+async function removeImagesAll(bookID: number) {
+  await prisma.image.deleteMany({ where: { book_id: bookID } });
+  const dirPath = `storage/media/book_${String(bookID).padStart(3, '0')}`;
+  fs.rm(dirPath, { recursive: true, force: true }, (err) => {
+    if (err) {
+      console.error(err);
+      throw err;
+    }
+    console.log('removeImagesAll', dirPath)
+    return true;
+  });
 }
 
 function prepageImages(images: Array<ImageFromDB>) {
@@ -139,11 +190,13 @@ function prepageImages(images: Array<ImageFromDB>) {
 }
 
 export {
+  uploadImage,
   uploadImages,
   viewImage,
   updateImage,
   searchImage,
   removeImage,
+  removeImagesAll,
   prepageImages,
-  totalImageBooks
+  totalImageBooks,
 };

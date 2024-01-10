@@ -41,9 +41,10 @@ async function view(req: RequestQueryID, reply: FastifyReply) {
 async function create(req: BookCreateRequest, reply: FastifyReply) {
   try {
     const data = normalizeBookForm(req.body);
-    const files = req.body['Upload[imageFiles][]'];
+    // const formFiles = req.body['Upload[imageFiles][]'];
     const book = await createBook(data);
-    await uploadImages(book.id, files);
+    // const files = typeof formFiles === 'object' && 'fieldname' in formFiles ? await imageIterator(formFiles) : formFiles
+    // await uploadImages(book.id, files);
     reply.send(book);
   } catch (error) {
     reply.code(404).send(error);
@@ -52,12 +53,14 @@ async function create(req: BookCreateRequest, reply: FastifyReply) {
 
 async function update(req: BookUpdateRequest, reply: FastifyReply) {
   try {
+    console.log('update boook', req.files)
     const bookID = Number(req.query.id);
-    const files = req.body['Upload[imageFiles][]'];
+    // const formFiles = req.body['Upload[imageFiles][]'];
     const data = normalizeBookForm(req.body);
     const book = await updateBook(bookID, data);
-    const image = await uploadImages(bookID, files);
-    reply.send({ ...book, image });
+    // const files = typeof formFiles === 'object' && 'fieldname' in formFiles ? await imageIterator(formFiles) : formFiles
+    // const image = await uploadImages(bookID, files);
+    reply.send({ ...book });
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -94,6 +97,10 @@ function normalizeBookForm(reqBody: BookUpdateForm) {
       ? Number(reqBody['Book[series_id]'].value)
       : null,
   };
+}
+
+async function* imageIterator<T>(img: T) {
+  yield img;
 }
 
 export { search, view, create, update, remove };

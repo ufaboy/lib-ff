@@ -336,7 +336,6 @@ function saveTextToFile(bookID: number, text: string | null) {
   }
   const fileName = `${String(bookID).padStart(3, '0')}.html`;
   const filePath = path.join('/app/storage/books', fileName);
-  console.log('saveTextToFile', filePath);
   fs.writeFile(filePath, text, (err) => {
     return err ?? true;
   });
