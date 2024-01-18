@@ -37,4 +37,9 @@ interface ImageFromDB {
   };
 }
 
-export type { Image, ImageFromDB, QueryImages, ImagesResponse };
+interface StorageImages {
+  bookID: number;
+  images: string[];
+}
+
+export type { Image, ImageFromDB, QueryImages, ImagesResponse, StorageImages };

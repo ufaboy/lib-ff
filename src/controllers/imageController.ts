@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import {
   removeImagesAll,
   viewImage,
+  viewImageByName,
   updateImage,
   searchImage,
   removeImage,
@@ -14,6 +15,8 @@ interface BodyType {
   username: { value: string };
   password: { value: string };
 }
+type RequestImageByName = FastifyRequest<{ Querystring: { bookID: number, imageName:string } }>
+
 async function search(
   req: FastifyRequest<{ Body: BodyType }>,
   reply: FastifyReply
@@ -30,6 +33,15 @@ async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
     const { id } = req.query;
     const image = await viewImage(Number(id));
+    reply.send(image);
+  } catch (error) {
+    reply.code(404).send(error);
+  }
+}
+async function viewByName(req: RequestImageByName, reply: FastifyReply) {
+  try {
+    const { bookID, imageName } = req.query;
+    const image = await viewImageByName(Number(bookID), imageName);
     reply.send(image);
   } catch (error) {
     reply.code(404).send(error);
@@ -80,4 +92,4 @@ async function total(req: FastifyRequest, reply: FastifyReply) {
   }
 }
 
-export { search, view, upload, update, remove, removAll, total };
+export { search, view, viewByName, upload, update, remove, removAll, total };

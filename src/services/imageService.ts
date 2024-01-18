@@ -1,8 +1,14 @@
 import { PrismaClient } from '@prisma/client';
-import { Image, ImageFromDB, QueryImages } from '../types/images.js';
+import {
+  Image,
+  ImageFromDB,
+  QueryImages,
+  StorageImages,
+} from '../types/images.js';
 import { pipeline } from 'stream';
-import util from 'node:util';
+import util, { promisify } from 'node:util';
 import fs from 'fs';
+import path from 'path';
 import fastifyMultipart from '@fastify/multipart';
 import multipart from '@fastify/multipart';
 import { RequestFormField } from '../types/meta.js';
@@ -64,6 +70,14 @@ async function uploadImages(
 
 async function viewImage(id: number) {
   const image = await prisma.image.findUnique({ where: { id: id } });
+  if (image) {
+    return image;
+  }
+  throw new Error('image not found');
+}
+
+async function viewImageByName(bookID: number, imageName: string) {
+  const image = await prisma.image.findFirst({ where: { book_id: bookID, file_name: imageName } });
   if (image) {
     return image;
   }
@@ -137,16 +151,17 @@ async function searchImage(params: QueryImages) {
 }
 
 async function totalImageBooks() {
-  const result = await prisma.image.groupBy({
-    by: ['book_id'],
-    _count: {
-      book_id: true,
-    },
-  });
-  return result.map((item) => ({
-    book_id: item.book_id,
-    images_count: item._count.book_id,
-  }));
+  // const result = await prisma.image.groupBy({
+  //   by: ['book_id'],
+  //   _count: {
+  //     book_id: true,
+  //   },
+  // });
+  // return result.map((item) => ({
+  //   book_id: item.book_id,
+  //   images_count: item._count.book_id,
+  // }));
+  return await getAllStorageImages()
 }
 
 async function removeImage(id: number) {
@@ -173,7 +188,7 @@ async function removeImagesAll(bookID: number) {
       console.error(err);
       throw err;
     }
-    console.log('removeImagesAll', dirPath)
+    console.log('removeImagesAll', dirPath);
     return true;
   });
 }
@@ -189,10 +204,35 @@ function prepageImages(images: Array<ImageFromDB>) {
   });
 }
 
+async function getAllStorageImages() {
+  const readdir = promisify(fs.readdir);
+  const stat = promisify(fs.stat);
+  const storagePath = 'storage/media';
+  const folders = await readdir(storagePath);
+  const bookImages: StorageImages[] = [];
+
+  for (const folder of folders) {
+    const folderPath = path.join(storagePath, folder);
+    const folderStat = await stat(folderPath);
+
+    if (folderStat.isDirectory()) {
+      const match = folder.match(/^book_(\d+)$/);
+      if (match) {
+        const bookID = parseInt(match[1]);
+        const images = await readdir(folderPath);
+        bookImages.push({ bookID, images });
+      }
+    }
+  }
+
+  return bookImages;
+}
+
 export {
   uploadImage,
   uploadImages,
   viewImage,
+  viewImageByName,
   updateImage,
   searchImage,
   removeImage,
