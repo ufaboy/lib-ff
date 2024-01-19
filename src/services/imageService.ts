@@ -77,7 +77,9 @@ async function viewImage(id: number) {
 }
 
 async function viewImageByName(bookID: number, imageName: string) {
-  const image = await prisma.image.findFirst({ where: { book_id: bookID, file_name: imageName } });
+  const image = await prisma.image.findFirst({
+    where: { book_id: bookID, file_name: imageName },
+  });
   if (image) {
     return image;
   }
@@ -151,17 +153,27 @@ async function searchImage(params: QueryImages) {
 }
 
 async function totalImageBooks() {
-  // const result = await prisma.image.groupBy({
-  //   by: ['book_id'],
-  //   _count: {
-  //     book_id: true,
-  //   },
-  // });
+
   // return result.map((item) => ({
   //   book_id: item.book_id,
   //   images_count: item._count.book_id,
   // }));
-  return await getAllStorageImages()
+  const storageImages = await getAllStorageImages();
+  const books = await prisma.book.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+    where: {
+      id: { in: storageImages.map((item) => item.bookID) },
+    },
+  });
+  const result = storageImages.map(item => {
+    const book = books.find(elem => elem.id === item.bookID)
+    return {bookID: item.bookID, bookName: book?.name, images: item.images}
+  })
+
+  return result;
 }
 
 async function removeImage(id: number) {
