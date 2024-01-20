@@ -18,7 +18,7 @@ interface BaseBook {
   cover: string | null;
 }
 interface Book {
-  [key: string]: string | number | null | Author | Series | Tag[] | Image[];
+  [key: string]: string | number | null | Date | Author | Series | Tag[] | Image[];
   id: number;
   name: string;
   description: string | null;
@@ -32,8 +32,8 @@ interface Book {
   images: Array<Image> | null;
   text_length: number | null;
   view_count: number | null;
-  updated_at: number | null;
-  last_read: number | null;
+  updated_at: Date;
+  last_read: Date | null;
 }
 
 interface BookResponse {
@@ -108,8 +108,8 @@ interface BookFromDB {
   image?: Array<ImageFromDB> | null;
   text_length: number | null;
   view_count: number;
-  updated_at: number | null;
-  last_read: number | null;
+  updated_at: Date;
+  last_read: Date | null;
 }
 
 

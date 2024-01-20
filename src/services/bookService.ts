@@ -30,7 +30,7 @@ async function createBook(data: BaseBook) {
       text_length: data.text?.length,
       author_id: data.author_id,
       series_id: data.series_id,
-      updated_at: Date.now() / 1000,
+      updated_at: Date(),
       book_tag: {
         createMany: {
           data: data.tag_ids.map((item) => {
@@ -63,6 +63,7 @@ async function viewBook(id: number) {
       view_count: {
         increment: 1,
       },
+      last_read: new Date()
     },
   });
   if (book) {
@@ -94,7 +95,7 @@ async function updateBook(bookID: number, data: BaseBook) {
       text_length: data.text?.length,
       author_id: data.author_id,
       series_id: data.series_id,
-      updated_at: Date.now() / 1000,
+      updated_at: new Date(),
       book_tag: {
         deleteMany: {},
         createMany: {
@@ -217,16 +218,16 @@ async function searchBook(params: QueryBooks) {
   if (updated_at) {
     whereConditions.push({
       updated_at: {
-        gte: new Date(updated_at).getTime() / 1000,
-        lte: Date.now() / 1000,
+        gte: new Date(updated_at),
+        lte: new Date(),
       },
     });
   }
   if (last_read) {
     whereConditions.push({
       last_read: {
-        gte: new Date(last_read).getTime() / 1000,
-        lte: Date.now() / 1000,
+        gte: new Date(last_read),
+        lte: new Date(),
       },
     });
   }
