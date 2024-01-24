@@ -7,4 +7,31 @@ interface User {
   role: string | null;
 }
 
-export type { User };
+interface SignInRequestBody {
+  username: string;
+  id: string;
+  rawId: string;
+  response: {
+    attestationObject: string;
+    clientDataJSON: string;
+    transports: Array<string>;
+    publicKeyAlgorithm: string;
+    publicKey: string;
+    authenticatorData: string;
+  };
+}
+interface SignInVerificationData {
+  username: string;
+  id: string;
+  rawId: ArrayBuffer;
+  response: {
+    attestationObject: ArrayBuffer;
+    clientDataJSON: ArrayBuffer;
+    transports: Array<string>;
+    publicKeyAlgorithm: string;
+    publicKey: string;
+    authenticatorData: string;
+  };
+}
+
+export type { User, SignInRequestBody, SignInVerificationData };

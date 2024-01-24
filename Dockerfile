@@ -3,7 +3,6 @@ FROM node:20-alpine as dev-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY . .
 RUN npx prisma generate
 USER root
 RUN apk add --no-cache mc mysql-client
