@@ -26,7 +26,7 @@ model book {
   text_length Int?
   author_id   Int?
   series_id   Int?
-  updated_at  DateTime   @db.DateTime(0)
+  updated_at  DateTime?  @db.DateTime(0)
   last_read   DateTime?  @db.DateTime(0)
   author      author?    @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-book-author_id")
   series      series?    @relation(fields: [series_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-book-series_id")
@@ -78,10 +78,23 @@ model tag {
 }
 
 model user {
-  id           Int     @id @default(autoincrement())
-  username     String  @db.VarChar(255) @unique
-  password     String  @db.VarChar(255)
-  salt         String  @db.VarChar(255)
-  access_token String  @db.VarChar(255)
-  role         String? @db.VarChar(255)
+  id               Int            @id @default(autoincrement())
+  username         String         @unique(map: "UNIQUE") @db.VarChar(255)
+  password         String         @db.VarChar(255)
+  salt             String         @db.VarChar(255)
+  access_token     String         @db.VarChar(1024)
+  role             String?        @db.VarChar(255)
+  currentChallenge String?        @db.VarChar(4096)
+  authenticator    authenticator?
+}
+
+model authenticator {
+  user_id              Int     @id
+  credentialID         String  @db.Text
+  credentialPublicKey  Bytes   @db.Blob
+  counter              Int     @default(0)
+  credentialDeviceType String  @default("0") @db.VarChar(32)
+  credentialBackedUp   Boolean @default(false)
+  transports           String  @default("0") @db.VarChar(255)
+  user                 user    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_authenticator_user")
 }

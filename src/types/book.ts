@@ -108,7 +108,7 @@ interface BookFromDB {
   image?: Array<ImageFromDB> | null;
   text_length: number | null;
   view_count: number;
-  updated_at: Date;
+  updated_at: Date | null;
   last_read: Date | null;
 }
 

@@ -325,7 +325,7 @@ function prepareBook(book: BookFromDB): Book {
       : [],
     text_length,
     view_count,
-    updated_at,
+    updated_at: updated_at ?? new Date(),
     last_read,
     tags: convertTags(book.book_tag),
   };

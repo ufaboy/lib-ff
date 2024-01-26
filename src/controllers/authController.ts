@@ -1,5 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { signin, login } from '../services/userService.js';
+
+import {
+  signin,
+  login,
+  getRegistrationOptions,
+  getVerifyRegistration,
+} from '../services/userService.js';
+import { RegistrationResponseJSON } from '@simplewebauthn/types';
 
 interface BodyType {
   username: string;
@@ -34,4 +41,32 @@ async function loginUser(
   }
 }
 
-export { registerUser, loginUser };
+async function generateRegistrationOptions(
+  req: FastifyRequest<{ Body: { username: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    console.log('generateRegistrationOptions 1', req.body)
+    const result = await getRegistrationOptions(req.body.username);
+    // @ts-ignore:next-line
+    req.session.username = req.body.username
+    req.session.set<any>('not-exist', req.body.username)
+    reply.send(result);
+  } catch (error) {
+    console.log({ 'generateRegistrationOptions error': error });
+    reply.code(401).send(error);
+  }
+}
+async function verifyRegistration(
+  req: FastifyRequest<{ Body: RegistrationResponseJSON }>,
+  reply: FastifyReply
+) {
+  // @ts-ignore:next-line
+  const username = req.session.get('not-exist') as string
+  console.log('verifyRegistration 1', username, req.session)
+  const result = await getVerifyRegistration(req.body, username)
+  console.log('verifyRegistration 2', result, username)
+  reply.send(result);
+}
+
+export { registerUser, loginUser, generateRegistrationOptions, verifyRegistration };
