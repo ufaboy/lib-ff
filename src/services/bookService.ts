@@ -5,7 +5,7 @@ import { Book, BaseBook, QueryBooks, BookFromDB } from '../types/book.js';
 import { BookTagShrink, Tag } from '../types/tag.js';
 
 const prisma = new PrismaClient({
-  // log: ['query'],
+  log: ['query'],
 });
 
 async function createBook(data: BaseBook) {
@@ -231,7 +231,8 @@ async function searchBook(params: QueryBooks) {
       },
     });
   }
-  const whereQuery = whereConditions.length ? { OR: whereConditions } : {};
+  const whereQuery = whereConditions.length ? { AND: whereConditions } : {};
+  console.log('whereQuery', whereQuery)
   const books = await prisma.book.findMany({
     select: {
       id: true,
@@ -248,16 +249,22 @@ async function searchBook(params: QueryBooks) {
       last_read: true,
       book_tag: {
         select: {
+
           tag: true,
         },
       },
     },
     where: whereQuery,
+    orderBy: [
+      {
+        [sort]: sortWay,
+      },
+      {
+        id: 'desc'
+      }
+    ],
     skip: (page - 1) * perPage,
     take: Number(perPage),
-    orderBy: {
-      [sort]: sortWay,
-    },
   });
   const total = await prisma.book.count({ where: whereQuery });
   return {
