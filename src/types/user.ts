@@ -1,4 +1,4 @@
-import { RegistrationResponseJSON } from '@simplewebauthn/types';
+import { RegistrationResponseJSON, AuthenticationResponseJSON } from '@simplewebauthn/types';
 
 interface User {
   id: number;
@@ -12,7 +12,7 @@ interface User {
 
 interface Authenticator {
   // SQL: Encode to base64url then store as `TEXT`. Index this column
-  credentialID: string;
+  credentialID: Uint8Array;
   // SQL: Store raw bytes as `BYTEA`/`BLOB`/etc...
   credentialPublicKey: Buffer;
   // SQL: Consider `BIGINT` since some authenticators return atomic timestamps as counters
@@ -24,11 +24,14 @@ interface Authenticator {
   credentialBackedUp: boolean;
   // SQL: `VARCHAR(255)` and store string array as a CSV string
   // Ex: ['usb' | 'ble' | 'nfc' | 'internal']
-  transports?: string;
-};
-
-interface RegistrationResponseJSONExtended extends RegistrationResponseJSON {
-username: string
+  transports?: AuthenticatorTransport[];
 }
 
-export type { User, Authenticator, RegistrationResponseJSONExtended };
+interface RegistrationResponseJSONExtended extends RegistrationResponseJSON {
+  username: string;
+}
+interface AuthenticationResponseJSONExtended extends AuthenticationResponseJSON {
+  username: string;
+}
+
+export type { User, Authenticator, RegistrationResponseJSONExtended, AuthenticationResponseJSONExtended };

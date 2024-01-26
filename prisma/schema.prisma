@@ -89,6 +89,7 @@ model user {
 }
 
 model authenticator {
+  id                   Int     @id @default(autoincrement())
   user_id              Int     @id
   credentialID         String  @db.Text
   credentialPublicKey  Bytes   @db.Blob

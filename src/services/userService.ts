@@ -1,14 +1,14 @@
 import { randomBytes, pbkdf2Sync } from 'crypto';
 import { PrismaClient } from '@prisma/client';
-import {
-  Authenticator,
-  User,
-} from '../types/user.js';
+import { Authenticator, User } from '../types/user.js';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
-import { RegistrationResponseJSON } from '@simplewebauthn/types';
+import { RegistrationResponseJSON, AuthenticationResponseJSON } from '@simplewebauthn/types';
+import base64url from 'base64url';
 
 const prisma = new PrismaClient();
 // Human-readable title for your website
@@ -16,7 +16,7 @@ const rpName = 'Library';
 // A unique identifier for your website
 const rpID = process.env.DOMEN || 'localhost';
 // The URL at which registrations and authentications should occur
-const origin = `https://${rpID}`;
+const origin = `http://${rpID}:5173`;
 
 async function getRegistrationOptions(username: string) {
   const user = await prisma.user.create({
@@ -63,10 +63,16 @@ async function getRegistrationOptions(username: string) {
 }
 
 async function getUserAuthenticators(id: number) {
-  return await prisma.authenticator.findMany({ where: { user_id: id } });
+  const result = await prisma.authenticator.findMany({ where: { user_id: id } });
+  return result.map(item => {
+    // @ts-ignore:next-line
+    return {...item, credentialID: base64url.decode(item.credentialID), transports: (item.transports.split(',') as AuthenticatorTransport[])}}) 
 }
 
-async function getVerifyRegistration(body: RegistrationResponseJSON, username: string) {
+async function getVerifyRegistration(
+  body: RegistrationResponseJSON,
+  username: string
+) {
   const user = await prisma.user.findUnique({ where: { username: username } });
   if (user) {
     const expectedChallenge: string = user?.currentChallenge ?? '';
@@ -76,24 +82,79 @@ async function getVerifyRegistration(body: RegistrationResponseJSON, username: s
       expectedOrigin: origin,
       expectedRPID: rpID,
     });
-    console.log('getVerifyRegistration', verification);
+
     const { verified, registrationInfo } = verification;
-    // @ts-ignore:next-line
-    const { credentialPublicKey, credentialID, counter, credentialDeviceType, credentialBackedUp,} = registrationInfo;
-    const newAuthenticator: Authenticator = {
-      credentialID,
-      credentialPublicKey,
-      counter,
-      credentialDeviceType,
-      credentialBackedUp,
-      // `body` here is from Step 2
-      // transports: body.response.transports,
-    };
-    await prisma.authenticator.update({
-      where: { user_id: user.id },
-      data: {...newAuthenticator},
+    if (verified) {
+      // @ts-ignore:next-line
+      const {credentialPublicKey, credentialID, counter, credentialDeviceType, credentialBackedUp,
+      } = registrationInfo;
+      const newAuthenticator: Authenticator = {
+        credentialID,
+        credentialPublicKey,
+        counter,
+        credentialDeviceType,
+        credentialBackedUp,
+        // @ts-ignore:next-line
+        transports: body.response.transports,
+      };
+      console.log('transports:', newAuthenticator.transports)
+      await prisma.authenticator.upsert({
+        where: { user_id: user.id },
+        // @ts-ignore:next-lin
+        update: {...newAuthenticator, credentialID: base64url(credentialID), user_id: user.id, transports: newAuthenticator.transports.join(',')},
+        // @ts-ignore:next-line
+        create: {...newAuthenticator, credentialID: base64url(credentialID), user_id: user.id, transports: newAuthenticator.transports.join(',')},
+      });
+    }
+    return verification;
+  }
+}
+
+async function getAuthenticationOptions(username: string) {
+  const user = await prisma.user.findUnique({ where: { username: username } });
+  if (user) {
+    const userAuthenticators: Authenticator[] = await getUserAuthenticators(user.id);
+    const options = await generateAuthenticationOptions({
+      rpID,
+      // Require users to use a previously-registered authenticator
+      allowCredentials: userAuthenticators.map((authenticator) => ({
+        id: authenticator.credentialID,
+        type: 'public-key',
+        transports: authenticator.transports,
+      })),
+      userVerification: 'preferred',
     });
-    return verification.verified;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        currentChallenge: options.challenge,
+      },
+    });
+    return options
+  } else {
+    throw new Error('not founded user')
+  }
+}
+async function getVerifyAuthentication(body: AuthenticationResponseJSON, username: string) {
+  const user = await prisma.user.findUnique({ where: { username: username }, include: {
+    authenticator: true
+  } });
+  if(user) {
+    const expectedChallenge = user.currentChallenge as string;
+    // @ts-ignore:next-line
+    const authenticator = base64url.decode(user.authenticator) ;
+    if (!authenticator) {
+      throw new Error(`Could not find authenticator ${body.id} for user ${user.id}`);
+    }
+    const verification = await verifyAuthenticationResponse({
+      response: body,
+      expectedChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      authenticator,
+    });
+
+    return verification
   }
 }
 
@@ -141,4 +202,6 @@ export {
   validToken,
   getRegistrationOptions,
   getVerifyRegistration,
+  getAuthenticationOptions,
+  getVerifyAuthentication
 };

@@ -5,8 +5,10 @@ import {
   login,
   getRegistrationOptions,
   getVerifyRegistration,
+  getAuthenticationOptions,
+  getVerifyAuthentication,
 } from '../services/userService.js';
-import { RegistrationResponseJSON } from '@simplewebauthn/types';
+import { RegistrationResponseJSONExtended, AuthenticationResponseJSONExtended } from '../types/user.js';
 
 interface BodyType {
   username: string;
@@ -46,11 +48,10 @@ async function generateRegistrationOptions(
   reply: FastifyReply
 ) {
   try {
-    console.log('generateRegistrationOptions 1', req.body)
     const result = await getRegistrationOptions(req.body.username);
     // @ts-ignore:next-line
-    req.session.username = req.body.username
-    req.session.set<any>('not-exist', req.body.username)
+    req.session.username = req.body.username;
+    req.session.set<any>('not-exist', req.body.username);
     reply.send(result);
   } catch (error) {
     console.log({ 'generateRegistrationOptions error': error });
@@ -58,15 +59,79 @@ async function generateRegistrationOptions(
   }
 }
 async function verifyRegistration(
-  req: FastifyRequest<{ Body: RegistrationResponseJSON }>,
+  req: FastifyRequest<{ Body: RegistrationResponseJSONExtended }>,
   reply: FastifyReply
 ) {
-  // @ts-ignore:next-line
-  const username = req.session.get('not-exist') as string
-  console.log('verifyRegistration 1', username, req.session)
-  const result = await getVerifyRegistration(req.body, username)
-  console.log('verifyRegistration 2', result, username)
+  const {
+    username,
+    id,
+    rawId,
+    response,
+    authenticatorAttachment,
+    clientExtensionResults,
+    type,
+  } = req.body;
+  const result = await getVerifyRegistration(
+    {
+      id,
+      rawId,
+      response,
+      authenticatorAttachment,
+      clientExtensionResults,
+      type,
+    },
+    username
+  );
+  console.log('verifyRegistration 2', result, username);
   reply.send(result);
 }
 
-export { registerUser, loginUser, generateRegistrationOptions, verifyRegistration };
+async function generateAuthenticationOptions(
+  req: FastifyRequest<{ Body: { username: string } }>,
+  reply: FastifyReply
+) {
+  try {
+    const result = await getAuthenticationOptions(req.body.username);
+    reply.send(result);
+  } catch (error) {
+    console.log({ 'generateAuthenticationOptions error': error });
+    reply.code(401).send(error);
+  }
+}
+
+async function verifyAuthentication(req: FastifyRequest<{ Body: AuthenticationResponseJSONExtended }>,
+  reply: FastifyReply) {
+  try {
+    const {
+      username,
+      id,
+      rawId,
+      response,
+      authenticatorAttachment,
+      clientExtensionResults,
+      type,
+    } = req.body;
+    const result = getVerifyAuthentication({
+      id,
+      rawId,
+      response,
+      authenticatorAttachment,
+      clientExtensionResults,
+      type,
+    },
+    username)
+    reply.send(result);
+  } catch (error) {
+    console.log({ 'verifyAuthentication error': error });
+    reply.code(401).send(error);
+  }
+}
+
+export {
+  registerUser,
+  loginUser,
+  generateRegistrationOptions,
+  verifyRegistration,
+  generateAuthenticationOptions,
+  verifyAuthentication
+};
