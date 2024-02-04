@@ -10,7 +10,8 @@ const __dirname = path.dirname(__filename);
 export type AppOptions = {
   http2?: boolean,
   logger?: boolean,
-  https?: Object
+  https?: Object,
+  bodyLimit?: number
 } & Partial<AutoloadPluginOptions>;
 
 // Pass --options via CLI arguments in command to enable these options.
@@ -20,7 +21,9 @@ const options: AppOptions = process.env.NODE_ENV === 'production' ? {
     allowHTTP1: true,
     key: fs.readFileSync(`${process.env.CERT_DIR}/privkey.pem`),
     cert: fs.readFileSync(`${process.env.CERT_DIR}/fullchain.pem`)
-  }
+  },
+  bodyLimit: 20971520
+  
 } : {};
 
 const app: FastifyPluginAsync<AppOptions> = async (

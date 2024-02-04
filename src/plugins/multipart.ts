@@ -8,6 +8,7 @@ export default fp(async (fastify) => {
       fields: 25,
       files: 333,
       fileSize: 10485760,
+      fieldSize: 10485760
     },
     attachFieldsToBody: true,
     onFile,
