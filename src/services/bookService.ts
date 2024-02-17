@@ -3,6 +3,7 @@ import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { Book, BaseBook, QueryBooks, BookFromDB } from '../types/book.js';
 import { BookTagShrink, Tag } from '../types/tag.js';
+import { convertSortQuery } from '../utils/helper.js';
 
 const prisma = new PrismaClient({
   // log: ['query'],
@@ -130,12 +131,9 @@ async function searchBook(params: QueryBooks) {
     page = 1,
     perPage = 10,
   } = params;
-  let { sort = 'id' } = params;
-  let sortWay = 'asc';
-  if (sort[0] === '-') {
-    sort = sort.substring(1);
-    sortWay = 'desc';
-  }
+  const { sort = ['-id'] } = params;
+  const sortObj = convertSortQuery(sort)
+
   const whereConditions = [];
   if (id) {
     whereConditions.push({
@@ -255,14 +253,7 @@ async function searchBook(params: QueryBooks) {
       },
     },
     where: whereQuery,
-    orderBy: [
-      {
-        [sort]: sortWay,
-      },
-      {
-        id: 'desc'
-      }
-    ],
+    orderBy: sortObj,
     skip: (page - 1) * perPage,
     take: Number(perPage),
   });

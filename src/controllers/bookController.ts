@@ -21,6 +21,8 @@ async function search(
 ) {
   try {
     const params = req.query;
+    const sort = req.query.sort;
+    console.log('search controller', {sort:sort})
     const books = await searchBook(params);
     reply.send(books);
   } catch (error) {
