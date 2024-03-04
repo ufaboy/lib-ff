@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import {
-  Image,
-  ImageFromDB,
-  QueryImages,
-  StorageImages,
-} from '../types/images.js';
+  Media,
+  MediaFromDB,
+  QueryMedia,
+  StorageMedia,
+} from '../types/media.js';
 import { pipeline } from 'stream';
 import util, { promisify } from 'node:util';
 import fs from 'fs';
@@ -16,7 +16,7 @@ import { RequestFormField } from '../types/meta.js';
 const prisma = new PrismaClient();
 const pump = util.promisify(pipeline);
 
-async function uploadImage(part: multipart.MultipartFile) {
+async function uploadMedia(part: multipart.MultipartFile) {
   const bookID = part.fields.bookID as unknown as RequestFormField;
   const dirPath = `media/book_${String(bookID.value).padStart(3, '0')}`;
   const fullDirPAth = `storage/${dirPath}`;
@@ -27,7 +27,7 @@ async function uploadImage(part: multipart.MultipartFile) {
     part.file,
     fs.createWriteStream(`${fullDirPAth}/${part.filename}`)
   );
-  await prisma.image.create({
+  await prisma.media.create({
     data: {
       file_name: part.filename,
       path: dirPath,
@@ -36,70 +36,70 @@ async function uploadImage(part: multipart.MultipartFile) {
   });
 }
 
-async function uploadImages(
+async function uploadMediaList(
   bookID: number,
   files?: AsyncIterableIterator<fastifyMultipart.MultipartFile>
 ) {
   if (!files) return null;
-  const images = [];
+  const mediaList = [];
 
   const dirPath = `media/book_${String(bookID).padStart(3, '0')}`;
   const fullDirPAth = `storage/${dirPath}`;
   if (!fs.existsSync(fullDirPAth)) {
     fs.mkdirSync(fullDirPAth, { recursive: true });
   }
-  console.log('uploadImages', files);
+  console.log('uploadMedia', files);
   for await (const part of files) {
     try {
       const fileName = part.filename;
       await pump(part.file, fs.createWriteStream(`${fullDirPAth}/${fileName}`));
-      const image = await prisma.image.create({
+      const media = await prisma.media.create({
         data: {
           file_name: fileName,
           path: dirPath,
           book_id: bookID,
         },
       });
-      images.push(image);
+      mediaList.push(media);
     } catch (error) {
       console.error('Error in file upload:', error);
     }
   }
-  return images;
+  return mediaList;
 }
 
-async function viewImage(id: number) {
-  const image = await prisma.image.findUnique({ where: { id: id } });
-  if (image) {
-    return image;
+async function viewMedia(id: number) {
+  const media = await prisma.media.findUnique({ where: { id: id } });
+  if (media) {
+    return media;
   }
-  throw new Error('image not found');
+  throw new Error('media not found');
 }
 
-async function viewImageByName(bookID: number, imageName: string) {
-  const image = await prisma.image.findFirst({
-    where: { book_id: bookID, file_name: imageName },
+async function viewMediaByName(bookID: number, mediaName: string) {
+  const media = await prisma.media.findFirst({
+    where: { book_id: bookID, file_name: mediaName },
   });
-  if (image) {
-    return image;
+  if (media) {
+    return media;
   }
-  throw new Error('image not found');
+  throw new Error('media not found');
 }
 
-async function updateImage(data: Image) {
-  const image = await prisma.image.update({
+async function updateMedia(data: Media) {
+  const media = await prisma.media.update({
     where: { id: data.id },
     data: {
       file_name: data.file_name,
     },
   });
-  if (image) {
-    return image;
+  if (media) {
+    return media;
   }
-  throw new Error('image not found');
+  throw new Error('media not found');
 }
 
-async function searchImage(params: QueryImages) {
+async function searchMedia(params: QueryMedia) {
   const { file_name, book_id, page, perPage } = params;
   let { sort = 'id' } = params;
   let sortWay = 'asc';
@@ -123,7 +123,7 @@ async function searchImage(params: QueryImages) {
     });
   }
   const whereQuery = whereConditions.length ? { OR: whereConditions } : {};
-  const images = await prisma.image.findMany({
+  const mediaList = await prisma.media.findMany({
     where: whereQuery,
     include: {
       book: {
@@ -140,9 +140,9 @@ async function searchImage(params: QueryImages) {
       [sort]: sortWay,
     },
   });
-  const total = await prisma.image.count({ where: whereQuery });
+  const total = await prisma.media.count({ where: whereQuery });
   return {
-    items: prepageImages(images),
+    items: prepageMedia(mediaList),
     _meta: {
       currentPage: Number(page),
       pageCount: Math.ceil(total / (perPage ?? 1)),
@@ -152,32 +152,32 @@ async function searchImage(params: QueryImages) {
   };
 }
 
-async function totalImageBooks() {
+async function totalMediaBooks() {
 
   // return result.map((item) => ({
   //   book_id: item.book_id,
   //   images_count: item._count.book_id,
   // }));
-  const storageImages = await getAllStorageImages();
+  const storageMedia = await getAllStorageMedia();
   const books = await prisma.book.findMany({
     select: {
       id: true,
       name: true,
     },
     where: {
-      id: { in: storageImages.map((item) => item.bookID) },
+      id: { in: storageMedia.map((item) => item.bookID) },
     },
   });
-  const result = storageImages.map(item => {
+  const result = storageMedia.map(item => {
     const book = books.find(elem => elem.id === item.bookID)
-    return {bookID: item.bookID, bookName: book?.name, images: item.images}
+    return {bookID: item.bookID, bookName: book?.name, mediaList: item.media}
   })
 
   return result;
 }
 
-async function removeImage(id: number) {
-  const result = await prisma.image.delete({ where: { id: id } });
+async function removeMedia(id: number) {
+  const result = await prisma.media.delete({ where: { id: id } });
   if (result) {
     const dirPath = `media/book_${String(result.book_id).padStart(3, '0')}`;
     const fullDirPAth = `storage/${dirPath}`;
@@ -192,21 +192,21 @@ async function removeImage(id: number) {
   }
 }
 
-async function removeImagesAll(bookID: number) {
-  await prisma.image.deleteMany({ where: { book_id: bookID } });
+async function removeMediaAll(bookID: number) {
+  await prisma.media.deleteMany({ where: { book_id: bookID } });
   const dirPath = `storage/media/book_${String(bookID).padStart(3, '0')}`;
   fs.rm(dirPath, { recursive: true, force: true }, (err) => {
     if (err) {
       console.error(err);
       throw err;
     }
-    console.log('removeImagesAll', dirPath);
+    console.log('removeMediaAll', dirPath);
     return true;
   });
 }
 
-function prepageImages(images: Array<ImageFromDB>) {
-  return images.map((img) => {
+function prepageMedia(mediaList: Array<MediaFromDB>) {
+  return mediaList.map((img) => {
     return {
       id: img.id,
       file_name: img.file_name,
@@ -216,12 +216,12 @@ function prepageImages(images: Array<ImageFromDB>) {
   });
 }
 
-async function getAllStorageImages() {
+async function getAllStorageMedia() {
   const readdir = promisify(fs.readdir);
   const stat = promisify(fs.stat);
   const storagePath = 'storage/media';
   const folders = await readdir(storagePath);
-  const bookImages: StorageImages[] = [];
+  const bookMedia: StorageMedia[] = [];
 
   for (const folder of folders) {
     const folderPath = path.join(storagePath, folder);
@@ -231,24 +231,24 @@ async function getAllStorageImages() {
       const match = folder.match(/^book_(\d+)$/);
       if (match) {
         const bookID = parseInt(match[1]);
-        const images = await readdir(folderPath);
-        bookImages.push({ bookID, images });
+        const media = await readdir(folderPath);
+        bookMedia.push({ bookID, media });
       }
     }
   }
 
-  return bookImages;
+  return bookMedia;
 }
 
 export {
-  uploadImage,
-  uploadImages,
-  viewImage,
-  viewImageByName,
-  updateImage,
-  searchImage,
-  removeImage,
-  removeImagesAll,
-  prepageImages,
-  totalImageBooks,
+  uploadMedia,
+  uploadMediaList,
+  viewMedia,
+  viewMediaByName,
+  updateMedia,
+  searchMedia,
+  removeMedia,
+  removeMediaAll,
+  prepageMedia,
+  totalMediaBooks,
 };

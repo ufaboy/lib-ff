@@ -13,7 +13,7 @@ async function createBook(data: BaseBook) {
     include: {
       author: true,
       series: true,
-      image: true,
+      media: true,
       book_tag: {
         select: {
           tag: true,
@@ -52,7 +52,7 @@ async function viewBook(id: number) {
     include: {
       author: true,
       series: true,
-      image: true,
+      media: true,
       book_tag: {
         select: {
           tag: true,
@@ -78,7 +78,7 @@ async function updateBook(bookID: number, data: BaseBook) {
     include: {
       author: true,
       series: true,
-      image: true,
+      media: true,
       book_tag: {
         select: {
           tag: true,
@@ -300,7 +300,7 @@ function prepareBook(book: BookFromDB): Book {
     series,
     author,
     text,
-    image,
+    media,
     text_length,
     view_count,
     updated_at,
@@ -317,8 +317,8 @@ function prepareBook(book: BookFromDB): Book {
     series,
     author,
     text: text ?? null,
-    images: image
-      ? image.map((img) => {
+    media: media
+      ? media.map((img) => {
           return {
             id: img.id,
             file_name: img.file_name,

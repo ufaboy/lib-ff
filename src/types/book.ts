@@ -1,7 +1,7 @@
 import type { BookTagShrink, Tag } from './tag.js';
 import type { Author } from './author.js';
 import type { ListMeta, RequestFormField } from './meta.js';
-import type { Image, ImageFromDB } from './images.js';
+import type { Media, MediaFromDB } from './media.js';
 import type { Series } from './series.js';
 import { FastifyRequest } from 'fastify';
 import fastifyMultipart from '@fastify/multipart';
@@ -18,7 +18,7 @@ interface BaseBook {
   cover: string | null;
 }
 interface Book {
-  [key: string]: string | number | null | Date | Author | Series | Tag[] | Image[];
+  [key: string]: string | number | null | Date | Author | Series | Tag[] | Media[];
   id: number;
   name: string;
   description: string | null;
@@ -29,7 +29,7 @@ interface Book {
   series: Series | null;
   tags: Array<Tag> | null;
   cover: string | null;
-  images: Array<Image> | null;
+  media: Array<Media> | null;
   text_length: number | null;
   view_count: number | null;
   updated_at: Date;
@@ -80,7 +80,7 @@ interface BookUpdateForm {
   'Book[series_id]': RequestFormField;
   'Book[rating]': RequestFormField;
   'Book[text]': RequestFormField;
-  'Upload[imageFiles][]': AsyncIterableIterator<fastifyMultipart.MultipartFile> | fastifyMultipart.MultipartFile;
+  'Upload[mediaFiles][]': AsyncIterableIterator<fastifyMultipart.MultipartFile> | fastifyMultipart.MultipartFile;
 }
 interface BookUpdateModel {
   name: string;
@@ -105,7 +105,7 @@ interface BookFromDB {
   series: Series | null;
   author: Author | null;
   text?: string | null;
-  image?: Array<ImageFromDB> | null;
+  media?: Array<MediaFromDB> | null;
   text_length: number | null;
   view_count: number;
   updated_at: Date | null;

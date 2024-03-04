@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import multipart from '@fastify/multipart';
-import { uploadImage as onFile } from '../services/imageService.js';
+import { uploadMedia as onFile } from '../services/mediaService.js';
 
 export default fp(async (fastify) => {
   fastify.register(multipart, {

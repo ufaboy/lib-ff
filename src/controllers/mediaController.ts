@@ -1,30 +1,30 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import {
-  removeImagesAll,
-  viewImage,
-  viewImageByName,
-  updateImage,
-  searchImage,
-  removeImage,
-  totalImageBooks,
-} from '../services/imageService.js';
-import { Image, QueryImages } from '../types/images.js';
+  removeMediaAll,
+  viewMedia,
+  viewMediaByName,
+  updateMedia,
+  searchMedia,
+  removeMedia,
+  totalMediaBooks,
+} from '../services/mediaService.js';
+import { Media, QueryMedia } from '../types/media.js';
 import { RequestQueryID } from '../types/meta.js';
 
 interface BodyType {
   username: { value: string };
   password: { value: string };
 }
-type RequestImageByName = FastifyRequest<{ Querystring: { bookID: number, imageName:string } }>
+type RequestMediaByName = FastifyRequest<{ Querystring: { bookID: number, mediaName:string } }>
 
 async function search(
   req: FastifyRequest<{ Body: BodyType }>,
   reply: FastifyReply
 ) {
   try {
-    const params = req.query as QueryImages;
-    const images = await searchImage(params);
-    reply.send(images);
+    const params = req.query as QueryMedia;
+    const mediaList = await searchMedia(params);
+    reply.send(mediaList);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -32,17 +32,17 @@ async function search(
 async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
     const { id } = req.query;
-    const image = await viewImage(Number(id));
-    reply.send(image);
+    const media = await viewMedia(Number(id));
+    reply.send(media);
   } catch (error) {
     reply.code(404).send(error);
   }
 }
-async function viewByName(req: RequestImageByName, reply: FastifyReply) {
+async function viewByName(req: RequestMediaByName, reply: FastifyReply) {
   try {
-    const { bookID, imageName } = req.query;
-    const image = await viewImageByName(Number(bookID), imageName);
-    reply.send(image);
+    const { bookID, mediaName } = req.query;
+    const media = await viewMediaByName(Number(bookID), mediaName);
+    reply.send(media);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -50,7 +50,7 @@ async function viewByName(req: RequestImageByName, reply: FastifyReply) {
 async function upload(req: FastifyRequest, reply: FastifyReply) {
   try {
     const files = await req.files();
-    // const result = await uploadImages(1, files);
+    // const result = await uploadMedias(1, files);
     // reply.send(result);
   } catch (error) {
     reply.code(404).send(error);
@@ -58,9 +58,9 @@ async function upload(req: FastifyRequest, reply: FastifyReply) {
 }
 async function update(req: FastifyRequest, reply: FastifyReply) {
   try {
-    const data = req.params as Image;
-    const image = await updateImage(data);
-    reply.send(image);
+    const data = req.params as Media;
+    const media = await updateMedia(data);
+    reply.send(media);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -68,8 +68,8 @@ async function update(req: FastifyRequest, reply: FastifyReply) {
 async function remove(req: FastifyRequest, reply: FastifyReply) {
   try {
     const { id } = req.query as { id: string };
-    const image = await removeImage(Number(id));
-    reply.send(image);
+    const media = await removeMedia(Number(id));
+    reply.send(media);
   } catch (error) {
     reply.code(404).send(error);
   }
@@ -77,7 +77,7 @@ async function remove(req: FastifyRequest, reply: FastifyReply) {
 async function removAll(req: FastifyRequest, reply: FastifyReply) {
   try {
     const { bookId } = req.query as { bookId: string };
-    const result = await removeImagesAll(Number(bookId));
+    const result = await removeMediaAll(Number(bookId));
     reply.send(result);
   } catch (error) {
     reply.code(404).send(error);
@@ -85,7 +85,7 @@ async function removAll(req: FastifyRequest, reply: FastifyReply) {
 }
 async function total(req: FastifyRequest, reply: FastifyReply) {
   try {
-    const result = await totalImageBooks();
+    const result = await totalMediaBooks();
     reply.send(result);
   } catch (error) {
     reply.code(404).send(error);

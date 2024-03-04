@@ -39,13 +39,13 @@ CREATE TABLE `book_tag` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `image` (
+CREATE TABLE `media` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `file_name` VARCHAR(255) NOT NULL,
     `path` VARCHAR(255) NOT NULL,
     `book_id` INTEGER NOT NULL,
 
-    INDEX `idx-image-book_id`(`book_id`),
+    INDEX `idx-media-book_id`(`book_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -101,4 +101,4 @@ ALTER TABLE `book_tag` ADD CONSTRAINT `fk-book_tag-book_id` FOREIGN KEY (`book_i
 ALTER TABLE `book_tag` ADD CONSTRAINT `fk-book_tag-tag_id` FOREIGN KEY (`tag_id`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `image` ADD CONSTRAINT `fk-image-book_id` FOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE `media` ADD CONSTRAINT `fk-media-book_id` FOREIGN KEY (`book_id`) REFERENCES `book`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;

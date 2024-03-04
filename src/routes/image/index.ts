@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from "fastify"
-import { search, view, viewByName, update, remove, removAll, total } from '../../controllers/imageController.js'
+import { search, view, viewByName, update, remove, removAll, total } from '../../controllers/mediaController.js'
 
 const author: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/', search);

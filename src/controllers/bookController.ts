@@ -12,7 +12,7 @@ import {
   BookUpdateRequest,
   QueryBooks,
 } from '../types/book.js';
-import { uploadImages } from '../services/imageService.js';
+import { uploadMediaList } from '../services/mediaService.js';
 import { RequestQueryID } from '../types/meta.js';
 
 async function search(
@@ -99,7 +99,7 @@ function normalizeBookForm(reqBody: BookUpdateForm) {
   };
 }
 
-async function* imageIterator<T>(img: T) {
+async function* MediaIterator<T>(img: T) {
   yield img;
 }
 

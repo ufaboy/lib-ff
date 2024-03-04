@@ -31,7 +31,7 @@ model book {
   author      author?    @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-book-author_id")
   series      series?    @relation(fields: [series_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-book-series_id")
   book_tag    book_tag[]
-  image       image[]
+  media       media[]
 
   @@index([author_id], map: "idx-book-author_id")
   @@index([series_id], map: "idx-book-series_id")
@@ -48,14 +48,14 @@ model book_tag {
   @@index([tag_id], map: "idx-book_tag-tag_id")
 }
 
-model image {
+model media {
   id        Int    @id @default(autoincrement())
   file_name String @db.VarChar(255)
   path      String @db.VarChar(255)
   book_id   Int
-  book      book   @relation(fields: [book_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-image-book_id")
+  book      book   @relation(fields: [book_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk-media-book_id")
 
-  @@index([book_id], map: "idx-image-book_id")
+  @@index([book_id], map: "idx-media-book_id")
 }
 
 model migration {
