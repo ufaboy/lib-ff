@@ -30,7 +30,7 @@ async function createBook(data: BaseBook) {
       text_length: data.text?.length,
       author_id: data.author_id,
       series_id: data.series_id,
-      updated_at: Date(),
+      updated_at: new Date(),
       book_tag: {
         createMany: {
           data: data.tag_ids.map((item) => {
