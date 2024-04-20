@@ -3,6 +3,7 @@ import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { Book, BaseBook, QueryBooks, BookFromDB } from '../types/book.js';
 import { BookTagShrink, Tag } from '../types/tag.js';
+import * as cheerio from 'cheerio';
 
 const prisma = new PrismaClient({
   // log: ['query'],
@@ -47,7 +48,7 @@ async function createBook(data: BaseBook) {
 }
 
 async function viewBook(id: number) {
-  const book = await prisma.book.update({
+  const book = await prisma.book.findUnique({
     where: { id: id },
     include: {
       author: true,
@@ -59,15 +60,29 @@ async function viewBook(id: number) {
         },
       },
     },
+  });
+  if (book) {
+    return prepareBook(book);
+  }
+  throw new Error('book not found');
+}
+async function readBook(id: number) {
+  const book = await prisma.book.update({
+    where: { id: id },
+    include: {
+      media: true,
+    },
     data: {
       view_count: {
         increment: 1,
       },
-      last_read: new Date()
+      last_read: new Date(),
     },
   });
   if (book) {
-    return prepareBook(book);
+    return book
+    // const text = parseTextBook(book.text);
+    // return { ...book, text: text };
   }
   throw new Error('book not found');
 }
@@ -232,7 +247,6 @@ async function searchBook(params: QueryBooks) {
     });
   }
   const whereQuery = whereConditions.length ? { AND: whereConditions } : {};
-  console.log('whereQuery', whereQuery)
   const books = await prisma.book.findMany({
     select: {
       id: true,
@@ -249,7 +263,6 @@ async function searchBook(params: QueryBooks) {
       last_read: true,
       book_tag: {
         select: {
-
           tag: true,
         },
       },
@@ -260,8 +273,8 @@ async function searchBook(params: QueryBooks) {
         [sort]: sortWay,
       },
       {
-        id: 'desc'
-      }
+        id: 'desc',
+      },
     ],
     skip: (page - 1) * perPage,
     take: Number(perPage),
@@ -338,6 +351,17 @@ function prepareBook(book: BookFromDB): Book {
   };
 }
 
+function parseTextBook(text: string | null) {
+  if (text) {
+    const $ = cheerio.load(text);
+    const sections: Array<string|null> = [];
+    $('section').each(function () {
+      sections.push($(this).prop('outerHTML'));
+    });
+    return sections;
+  } else return null;
+}
+
 function saveTextToFile(bookID: number, text: string | null) {
   if (!text) {
     return null;
@@ -349,4 +373,12 @@ function saveTextToFile(bookID: number, text: string | null) {
   });
 }
 
-export { createBook, viewBook, updateBook, searchBook, removeBook };
+export {
+  createBook,
+  viewBook,
+  readBook,
+  updateBook,
+  searchBook,
+  removeBook,
+  parseTextBook,
+};

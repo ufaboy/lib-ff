@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import {
   createBook,
   viewBook,
+  readBook,
   updateBook,
   searchBook,
   removeBook,
@@ -32,6 +33,15 @@ async function view(req: RequestQueryID, reply: FastifyReply) {
   try {
     const { id } = req.query;
     const book = await viewBook(Number(id));
+    reply.send(book);
+  } catch (error) {
+    reply.code(404).send(error);
+  }
+}
+async function read(req: RequestQueryID, reply: FastifyReply) {
+  try {
+    const { id } = req.query;
+    const book = await readBook(Number(id));
     reply.send(book);
   } catch (error) {
     reply.code(404).send(error);
@@ -103,4 +113,4 @@ async function* MediaIterator<T>(img: T) {
   yield img;
 }
 
-export { search, view, create, update, remove };
+export { search, view, read, create, update, remove };
