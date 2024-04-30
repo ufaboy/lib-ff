@@ -7,7 +7,7 @@ const series: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/read', read);
   fastify.post('/create', create);
   fastify.post('/update', update);
-  fastify.post('/delete', remove);
+  fastify.delete('/delete', remove);
 }
 
 export default series;

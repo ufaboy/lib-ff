@@ -36,7 +36,8 @@ async function view(req: RequestQueryID, reply: FastifyReply) {
 }
 async function create(req: RequestCreateTag, reply: FastifyReply) {
   try {
-    const { name } = req.params as { name: string };
+    const { name } = req.body as { name: string };
+    console.log('create tag', name);
     const tag = await createTag(name);
     reply.send(tag);
   } catch (error) {

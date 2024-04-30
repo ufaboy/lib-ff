@@ -26,6 +26,7 @@ async function updateSeries(id: number, data: BaseSeries) {
     where: { id: id },
     data: {
       name: data.name,
+      url: data.url,
     },
   });
   if (series) {

@@ -5,8 +5,8 @@ const author: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get('/', search);
   fastify.get('/view', view);
   fastify.post('/create', create);
-  fastify.post('/update', update);
-  fastify.post('/delete', remove);
+  fastify.put('/update', update);
+  fastify.delete('/delete', remove);
 }
 
 export default author;

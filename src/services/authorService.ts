@@ -26,6 +26,7 @@ async function updateAuthor(id: number, data: BaseAuthor) {
     where: { id: id },
     data: {
       name: data.name,
+      url: data.url,
     },
   });
   if (author) {
