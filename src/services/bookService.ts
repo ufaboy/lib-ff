@@ -134,7 +134,7 @@ async function searchBook(params: QueryBooks) {
     id,
     name,
     text,
-    tag,
+
     rating,
     view_count,
     authorName,
@@ -145,6 +145,12 @@ async function searchBook(params: QueryBooks) {
     page = 1,
     perPage = 10,
   } = params;
+  const tags = Array.isArray(params['tag[]']) 
+  ? params['tag[]'] 
+  : params['tag[]'] 
+    ? [params['tag[]']] 
+    : undefined;
+
   let { sort = 'id' } = params;
   let sortWay = 'asc';
   if (sort[0] === '-') {
@@ -173,12 +179,15 @@ async function searchBook(params: QueryBooks) {
       },
     });
   }
-  if (tag) {
+  if (tags) {
+    console.log('tags', tags);
     whereConditions.push({
       book_tag: {
         some: {
           tag: {
-            name: tag,
+            name: {
+              in: tags,
+            },
           },
         },
       },

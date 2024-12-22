@@ -50,9 +50,9 @@ interface MetaLinks {
 }
 
 interface QueryBooks {
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | undefined | string[];
   id?: number;
-  tag?: string;
+  'tag[]'?: string[];
   view_count?: number;
   name?: string;
   text?: string;
