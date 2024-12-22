@@ -2,8 +2,10 @@
 FROM node:20-alpine as dev-stage
 WORKDIR /app
 COPY package*.json ./
+RUN apk upgrade --update-cache --available && \
+    apk add openssl && \
+    rm -rf /var/cache/apk/*
 RUN npm install
-RUN apk add --no-cache openssl1.1-compat
 RUN npx prisma generate
 USER root
 RUN apk add --no-cache mc mysql-client
@@ -15,10 +17,12 @@ FROM node:20-alpine as prod-stage
 WORKDIR /app
 # COPY --from=dev-stage /app /app
 COPY package*.json ./
+RUN apk upgrade --update-cache --available && \
+    apk add openssl && \
+    rm -rf /var/cache/apk/*
 RUN npm install
 COPY . .
 COPY .env .env
-RUN apk add --no-cache openssl1.1-compat
 RUN npx prisma generate
 USER root
 RUN apk add --no-cache mc mysql-client
