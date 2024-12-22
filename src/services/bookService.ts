@@ -134,7 +134,6 @@ async function searchBook(params: QueryBooks) {
     id,
     name,
     text,
-
     rating,
     view_count,
     authorName,

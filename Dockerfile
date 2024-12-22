@@ -3,6 +3,7 @@ FROM node:20-alpine as dev-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
+RUN apk add --no-cache openssl1.1-compat
 RUN npx prisma generate
 USER root
 RUN apk add --no-cache mc mysql-client
@@ -17,6 +18,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 COPY .env .env
+RUN apk add --no-cache openssl1.1-compat
 RUN npx prisma generate
 USER root
 RUN apk add --no-cache mc mysql-client

@@ -20,8 +20,8 @@ CREATE TABLE `book` (
     `text_length` INTEGER NULL,
     `author_id` INTEGER NULL,
     `series_id` INTEGER NULL,
-    `updated_at` INTEGER NULL,
-    `last_read` INTEGER NULL,
+    `updated_at` DATETIME NULL,
+    `last_read` DATETIME NULL,
 
     INDEX `idx-book-author_id`(`author_id`),
     INDEX `idx-book-series_id`(`series_id`),
