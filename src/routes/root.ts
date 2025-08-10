@@ -6,4 +6,6 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   })
 }
 
+
+
 export default root;
