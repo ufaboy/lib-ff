@@ -10,7 +10,7 @@ services:
       - ./storage:/app/storage
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=mysql://${DB_USERNAME:-root}:${DB_PASSWORD:-changeme}@db:3306/${DB_NAME:-library}
+      - DATABASE_URL=mysql://${DATABASE_NAME}:${DATABASE_PASSWORD}@db:3306/${DB_NAME}
     env_file:
       - .env.production
     depends_on:
@@ -27,9 +27,9 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${DB_NAME:-library}
-      - MYSQL_USER=${DB_USERNAME}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DATABASE_NAME}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
       - MYSQL_CHARACTER_SET_SERVER=utf8mb4
       - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
     volumes:
