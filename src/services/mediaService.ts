@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import {
   Media,
   MediaFromDB,
@@ -9,14 +9,12 @@ import { pipeline } from 'stream';
 import util, { promisify } from 'node:util';
 import fs from 'fs';
 import path from 'path';
-import fastifyMultipart from '@fastify/multipart';
-import multipart from '@fastify/multipart';
+import {MultipartFile} from '@fastify/multipart';
 import { RequestFormField } from '../types/meta.js';
 
-const prisma = new PrismaClient();
 const pump = util.promisify(pipeline);
 
-async function uploadMedia(part: multipart.MultipartFile) {
+async function uploadMedia(part: MultipartFile) {
   const bookID = part.fields.bookID as unknown as RequestFormField;
   const dirPath = `media/book_${String(bookID.value).padStart(3, '0')}`;
   const fullDirPAth = `storage/${dirPath}`;
@@ -38,7 +36,7 @@ async function uploadMedia(part: multipart.MultipartFile) {
 
 async function uploadMediaList(
   bookID: number,
-  files?: AsyncIterableIterator<fastifyMultipart.MultipartFile>
+  files?: AsyncIterableIterator<MultipartFile>
 ) {
   if (!files) return null;
   const mediaList = [];

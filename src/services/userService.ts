@@ -1,8 +1,6 @@
 import { randomBytes, pbkdf2Sync } from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { User } from '../types/user.js';
-
-const prisma = new PrismaClient();
 
 async function signin(username: string, password: string) {
   const salt = randomBytes(16).toString('hex');

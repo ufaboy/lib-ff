@@ -1,13 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { Book, BaseBook, QueryBooks, BookFromDB } from '../types/book.js';
 import { BookTagShrink, Tag } from '../types/tag.js';
 import * as cheerio from 'cheerio';
-
-const prisma = new PrismaClient({
-  // log: ['query'],
-});
 
 async function createBook(data: BaseBook) {
   const book = await prisma.book.create({

@@ -4,7 +4,7 @@ import type { ListMeta, RequestFormField } from './meta.js';
 import type { Media, MediaFromDB } from './media.js';
 import type { Series } from './series.js';
 import { FastifyRequest } from 'fastify';
-import fastifyMultipart from '@fastify/multipart';
+import { MultipartFile } from '@fastify/multipart';
 
 interface BaseBook {
   name: string;
@@ -80,7 +80,7 @@ interface BookUpdateForm {
   'Book[series_id]': RequestFormField;
   'Book[rating]': RequestFormField;
   'Book[text]': RequestFormField;
-  'Upload[mediaFiles][]': AsyncIterableIterator<fastifyMultipart.MultipartFile> | fastifyMultipart.MultipartFile;
+  'Upload[mediaFiles][]': AsyncIterableIterator<MultipartFile> | MultipartFile;
 }
 interface BookUpdateModel {
   name: string;

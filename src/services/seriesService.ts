@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { Series, BaseSeries, QuerySeries } from '../types/series.js';
-
-const prisma = new PrismaClient();
 
 async function createSeries(data: BaseSeries) {
   const series = await prisma.series.create({

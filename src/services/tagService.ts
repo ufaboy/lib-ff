@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { Tag, BaseTag } from '../types/tag.js';
-
-const prisma = new PrismaClient();
 
 async function createTag(name: string) {
   const tag = await prisma.tag.create({

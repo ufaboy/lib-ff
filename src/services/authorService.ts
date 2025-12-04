@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { BaseAuthor, QueryAuthor } from '../types/author.js';
 
-const prisma = new PrismaClient();
 
 async function createAuthor(data: BaseAuthor) {
   const author = await prisma.author.create({
