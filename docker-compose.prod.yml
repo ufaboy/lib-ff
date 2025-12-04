@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: prod-stage
+    container_name: lib-ff-app-prod
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./storage:/app/storage
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mysql://${DB_USERNAME:-root}:${DB_PASSWORD:-changeme}@mysql:3306/${DB_NAME:-library}
+    env_file:
+      - .env.production
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - lib-network
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: lib-ff-mysql-prod
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME:-library}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - lib-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: --default-authentication-plugin=mysql_native_password
+
+networks:
+  lib-network:
+    driver: bridge
+
+volumes:
+  mysql_data_prod:
+    driver: local

@@ -1,0 +1,6 @@
+-- MySQL 8 initialization script
+-- This file runs automatically when the MySQL container is first created
+-- Add your database initialization SQL here if needed
+
+-- Example: Create additional tables or seed data
+-- Prisma migrations will handle the schema creation

@@ -6,7 +6,7 @@ export default fp(async (fastify: FastifyInstance) => {
   fastify.addHook(
     'onRequest',
     async (request: FastifyRequest, reply: FastifyReply) => {
-      if (request.routeOptions.url.startsWith('/api/auth/')) {
+      if (request.routeOptions.url?.startsWith('/api/auth/')) {
         return;
       }
       if (request.url.includes('/media/')) {

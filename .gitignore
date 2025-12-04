@@ -67,7 +67,3 @@ test/types/index.js
 
 # compiled app
 dist
-
-
-
-docker-compose.yml

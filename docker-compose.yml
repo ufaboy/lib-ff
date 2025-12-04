@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: dev-stage
+    container_name: lib-ff-app-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./storage:/app/storage
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=mysql://root:${DB_PASSWORD:-rootpassword}@mysql:3306/${DB_NAME:-library}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - lib-network
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: lib-ff-mysql-dev
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=${DB_NAME:-library}
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - lib-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  lib-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
