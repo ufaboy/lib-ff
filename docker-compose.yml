@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       target: dev-stage
-    container_name: lib-ff-app-dev
+    container_name: lib-app
     ports:
       - "3000:3000"
     volumes:
@@ -14,17 +12,17 @@ services:
       - ./storage:/app/storage
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=mysql://root:${DB_PASSWORD:-rootpassword}@mysql:3306/${DB_NAME:-library}
+      - DATABASE_URL=mysql://root:${DB_PASSWORD:-rootpassword}@db:3306/${DB_NAME:-library}
     depends_on:
-      mysql:
+      db:
         condition: service_healthy
     networks:
       - lib-network
     restart: unless-stopped
 
-  mysql:
-    image: mysql:8.0
-    container_name: lib-ff-mysql-dev
+  db:
+    image: mysql:8
+    container_name: lib-db
     ports:
       - "3306:3306"
     environment:
@@ -33,7 +31,7 @@ services:
       - MYSQL_CHARACTER_SET_SERVER=utf8mb4
       - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
     networks:
       - lib-network
@@ -50,5 +48,5 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data:
+  db_data:
     driver: local
